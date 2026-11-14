@@ -1,0 +1,8 @@
+android/build/
+dist/
+*.p12
+*.jks
+*.keystore
+password.txt
+.env
+__pycache__/

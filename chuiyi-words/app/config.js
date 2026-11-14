@@ -1,0 +1,1 @@
+window.CY_CONFIG={editor:false,localServer:false};

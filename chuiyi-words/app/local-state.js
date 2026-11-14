@@ -1,0 +1,1 @@
+/* Personal state is supplied only by the local editor server. */
