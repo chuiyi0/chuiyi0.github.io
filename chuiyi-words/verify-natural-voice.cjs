@@ -23,7 +23,7 @@ async function run(p){let done=false,result,failure;p.then(v=>{done=true;result=
  for(let i=0;i<manifest.parts.length;i++)vm.runInContext(fs.readFileSync(root+manifest.parts[i],'utf8'),ctx);
  const full=await audio.exportPack(manifest);assert(audio.validatePack(full));
  assert.equal(Object.keys(full.clips).length,manifest.count);
- const active=catalog.entries.filter(w=>!['age','add'].includes(w.word.toLowerCase())&&!w.family_only);
+ const active=catalog.entries.filter(w=>!['age','add','up','ox'].includes(w.word.toLowerCase())&&!w.family_only);
  assert(active.every(w=>Object.hasOwn(full.clips,w.word.toLowerCase())),'complete learning-word coverage');
  assert(Buffer.byteLength(JSON.stringify(full))<50*1024*1024);
  console.log('PASS complete offline audio, playback order, export filtering, import validation and 50MB limit');

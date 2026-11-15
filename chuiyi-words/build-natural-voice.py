@@ -14,7 +14,7 @@ VOICE='en-US-JennyNeural'
 entries=json.loads((SRC/'app/catalog.json').read_text(encoding='utf-8'))['entries']
 shared=json.loads((SRC/'app/shared.json').read_text(encoding='utf-8'))
 references=shared.get('bookMeta',{}).get('familyOnlyWords',{})
-def reference(w):return references.get(w['id'],w.get('family_only',False) or w['word'].lower() in ['age','add'])
+def reference(w):return references.get(w['id'],w.get('family_only',False) or w['word'].lower() in ['age','add','up','ox'])
 unique={w['word'].strip().lower():w['word'].strip() for w in entries if not reference(w)}
 words=list(unique.values())
 summary={'voice':VOICE,'rate':'-5%','codec':'audio/mpeg','sampleRate':24000,'bitrate':24000,'words':len(words),'batches':0,'errors':[]}

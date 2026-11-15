@@ -3,7 +3,7 @@ import json,hashlib,base64,re
 R=Path(__file__).parent;A=R/'app';D=R/'dist';D.mkdir(exist_ok=True)
 for name in ['catalog','shared']:
  text=(A/(name+'.json')).read_text();(A/(name+'.js')).write_text('window.CY_'+name.upper()+'='+text+';')
-c=json.loads((A/'catalog.json').read_text());v={'appVersion':'0.5.3','contentVersion':c['version'],'catalogSha256':hashlib.sha256((A/'catalog.json').read_bytes()).hexdigest(),'sharedSha256':hashlib.sha256((A/'shared.json').read_bytes()).hexdigest()};(A/'version.json').write_text(json.dumps(v,separators=(',',':')))
+c=json.loads((A/'catalog.json').read_text());v={'appVersion':'0.5.4','contentVersion':c['version'],'catalogSha256':hashlib.sha256((A/'catalog.json').read_bytes()).hexdigest(),'sharedSha256':hashlib.sha256((A/'shared.json').read_bytes()).hexdigest()};(A/'version.json').write_text(json.dumps(v,separators=(',',':')))
 for editor,name in [(False,'吹衣单词_学习版预览.html'),(True,'吹衣单词_本地编辑.html')]:
  html=(A/'index.html').read_text();html=re.sub(r'<link rel="(?:icon|manifest)"[^>]+>','',html);html=re.sub(r'<link rel="stylesheet"[^>]+>','<style>'+(A/'styles.css').read_text()+'</style>',html)
  html=html.replace('</head>','<link rel="icon" href="data:image/svg+xml;base64,'+base64.b64encode((A/'icon.svg').read_bytes()).decode()+'"></head>')

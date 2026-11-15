@@ -35,7 +35,7 @@
     const path = window.CY_DEFAULT_VOICE?.parts?.[index];
     if (!/^audio\/voice-\d{3}\.js$/.test(path || '')) return Promise.reject(Error('内置音频索引不完整'));
     const pending = new Promise((resolve, reject) => {
-      const script = document.createElement('script'); script.src = path;
+      const script = document.createElement('script'); script.src = (window.CY_VOICE_ASSET_BASE || '') + path;
       script.onload = () => {
         script.remove(); const part = window.CY_AUDIO_PARTS[index];
         if (part) resolve(part);
