@@ -1,0 +1,32 @@
+{
+  "versionName": "0.5.4",
+  "versionCode": 27,
+  "productionDeployment": "7cf5edf3-f8d0-4a26-9388-9765ae005b4c",
+  "apk": "https://chuiyi.pages.dev/words/downloads/chuiyi-words-0.5.4.apk",
+  "apkSha256": "ae27153c9bab7e17cfd58290cddbc05c5d8bd67f44794d8fa931aa4c40cbd03d",
+  "applicationCommit": "e35908c7dde7a69e3aaf2e2ae5543cec6c2001fa",
+  "referenceWords": [
+    "age",
+    "add",
+    "up",
+    "ox"
+  ],
+  "learningEntries": 7371,
+  "audioClips": 7370,
+  "sharedRoutes": [
+    "/words/app.js",
+    "/test/app.js",
+    "/test/project/app.js"
+  ],
+  "protectedVoiceRoutes": [
+    "/test/voice-engine.js",
+    "/test/project/voice-engine.js"
+  ],
+  "checks": {
+    "sharedCodeAndAuthentication": "passed local regression checks",
+    "publicSourceMatchesCommit": true,
+    "apkSigningAndRemoteDownload": "passed",
+    "authenticatedBrowserAfterFinalRoutingFix": "interrupted when local connection closed"
+  },
+  "backupStatus": "Source and audio assets are in GitHub; signed APK is in R2. Library/Google Drive file transfer could not be completed while the primary environment was unavailable."
+}
