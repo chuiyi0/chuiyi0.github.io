@@ -1,4 +1,4 @@
-const CACHE='chuiyi-words-0.5.1';
+const CACHE='chuiyi-words-0.5.2';
 const FILES=['./','index.html','styles.css','themes.js','config.js','i18n.js','art.js','local-state.js','catalog.js','shared.js','app.js','voice-engine.js','icon.svg','manifest.webmanifest'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('chuiyi-words-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
