@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="568" height="568" viewBox="0 0 568 568" role="img">
+<title>CY 单词 · 三层规整书页</title>
+<defs>
+  <linearGradient id="paper" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0" stop-color="#ffffff" /><stop offset="1" stop-color="#fefeff" /></linearGradient>
+  <clipPath id="tile_clip"><rect x="7" y="3" width="554" height="554" rx="132" /></clipPath>
+    <linearGradient id="left-top" gradientUnits="userSpaceOnUse" x1="107" y1="308" x2="276" y2="355">
+      <stop stop-color="#f1faff" /><stop offset="0.38" stop-color="#d4efff" /><stop offset="1" stop-color="#9dd6ff" />
+    </linearGradient>
+    <linearGradient id="right-top" gradientUnits="userSpaceOnUse" x1="288" y1="369" x2="456" y2="284">
+      <stop stop-color="#67baff" /><stop offset="1" stop-color="#d0ecff" />
+    </linearGradient>
+    <linearGradient id="left-middle" gradientUnits="userSpaceOnUse" x1="87" y1="332" x2="279" y2="379">
+      <stop stop-color="#69acff" /><stop offset="0.62" stop-color="#4a9efa" /><stop offset="1" stop-color="#2082fb" />
+    </linearGradient>
+    <linearGradient id="right-middle" gradientUnits="userSpaceOnUse" x1="292" y1="378" x2="488" y2="322">
+      <stop stop-color="#5fb9ff" /><stop offset="1" stop-color="#b1dfff" />
+    </linearGradient>
+    <linearGradient id="cover" gradientUnits="userSpaceOnUse" x1="88" y1="359" x2="484" y2="374">
+      <stop stop-color="#2584ff" /><stop offset="0.38" stop-color="#0871fb" /><stop offset="0.54" stop-color="#0083ff" /><stop offset="1" stop-color="#278cff" />
+    </linearGradient>
+</defs>
+<g>
+  <g fill="#0b275f">
+    <path d="M254.6 268.9 C241.9 277.1 227.7 281.0 213.0 281.0 C169 281 134 247 134 204 C134 161 170 126 215 126 C246 126 276 146 300 177 Q313 194 329 205 V285" fill="none" stroke="#0b275f" stroke-width="43" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M312.10663561627734 191.7009684638779 L377.99888738571315 108 Q381 106 385 106 H411 Q432 106 425.6394104866273 117 L345.89336438372266 218.2990315361221Z" />
+  </g>
+  <g fill="none" stroke="#329aff" stroke-width="13" stroke-linecap="round"><path d="M433 77 L440 54 M458 90 L480 69 M473 113 L498 107" /></g>
+  <path d="M459 157 Q465.4 190.6 499 197 Q465.4 203.4 459 237 Q452.6 203.4 419 197 Q452.6 190.6 459 157Z" fill="#ffc51d" />
+
+  <g id="book">
+    <path id="left-upper-page" fill="url(#left-top)" d="M111 298 C174 296 239 318 275.9 361.9 C230 331.2 170.8 314.3 106.6 317 L111 298 Z" />
+    <path id="right-upper-page" fill="url(#right-top)" d="M288.8 369 C326.6 319.4 387.6 283.9 455.7 283.2 L460.1 307.7 C398.2 309.8 337.7 330.9 288.8 369 Z" />
+    <path id="left-middle-page" fill="url(#left-middle)" d="M86 327.7 C153.6 318.8 230.3 337.4 279.4 381.3 C225.7 352.6 157.2 340.4 86.8 357.5 L80.2 334.4 Q78.7 329.3 86 327.7 Z" />
+    <path id="right-middle-page" fill="url(#right-middle)" d="M291.8 379.5 C344.4 334.6 414.9 308.8 488.5 318.4 L482.7 350.4 C415.3 333 348.6 348.6 291.8 379.5 Z" />
+    <path id="lower-cover" fill="url(#cover)" d="M86.8 357.5 C157.2 340.4 225.7 352.6 279.4 381.3 Q283.2 384.5 291.8 379.5 C348.6 348.6 415.3 333 482.7 350.4 L480.6 373.3 C416 354.9 350.8 365 293.5 390.3 Q282.8 397.4 272.5 389.8 C219.2 362.5 155.6 357.5 94.5 374.2 Q90.5 375.1 89.5 370.3 L86.8 357.5 Z" />
+  </g>
+
+  <g fill="none" stroke="#0b275f" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="14" d="M 190.3 431 V 465 M 260.9 431 V 465 M 225.6 431 V 504" />
+    <path stroke-width="12" d="M 190.3 430 H 260.9 M 190.3 448 H 260.9 M 190.3 466 H 260.9 M 180.0 485 H 271.2" />
+    <path stroke-width="12" d="M 204.1 409 L 211.8 421 M 247.9 409 L 240.2 421" />
+    <path stroke-width="14" d="M 311.6 442 V 499 L 323.6 486 M 389.0 413 V 497 Q 389.0 503 383.8 503 M 337.4 455 V 481 M 364.9 455 V 481" />
+    <path stroke-width="12" d="M 298.7 441 H 311.6 M 336.5 412 H 389.0 M 335.7 432 H 366.6 M 337.4 454 H 364.9 M 337.4 482 H 364.9 M 368.4 503 H 383.8" />
+    <path stroke-width="12" d="M 305.6 409 L 314.2 420" />
+  </g>
+</g>
+</svg>
