@@ -8,8 +8,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.Voice;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -24,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.Set;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,8 +38,6 @@ public class MainActivity extends Activity {
   private android.webkit.ValueCallback<android.net.Uri[]> filePickerCallback;
   private static final int BOOK_FILE_PICKER=944;
   private android.media.MediaPlayer offlinePlayer;
-  private TextToSpeech tts;
-  private boolean ttsReady=false;
   private String exportText;
   private String exportName="吹衣单词_个人备份.json",exportMime="application/json";
   private volatile boolean syncing=false;
@@ -77,17 +72,7 @@ public class MainActivity extends Activity {
       private boolean navigate(String url){if(url.startsWith("file:///android_asset/app/"))return false;if(url.startsWith("https://"))openExternal(url);return true;}
     });
     setContentView(web);web.loadUrl("file:///android_asset/app/index.html");
-    tts=new TextToSpeech(this,new TextToSpeech.OnInitListener(){
-      @Override public void onInit(int status){
-        if(status!=TextToSpeech.SUCCESS||tts==null)return;
-        int result=tts.setLanguage(Locale.US);Set<Voice> voices=tts.getVoices();
-        if(result>=0&&voices!=null)for(Voice voice:voices){
-          if(voice.getLocale().getLanguage().equals("en")&&voice.getLocale().getCountry().equals("US")&&!voice.isNetworkConnectionRequired()){
-            tts.setVoice(voice);ttsReady=true;break;
-          }
-        }
-      }
-    });
+
   }
   private void js(String code){if(web!=null)web.evaluateJavascript(code,null);}
   private void message(String text){Toast.makeText(this,text,Toast.LENGTH_SHORT).show();}
@@ -141,16 +126,15 @@ public class MainActivity extends Activity {
         int comma=data.indexOf(',');if(comma<0||!data.substring(0,comma).endsWith(";base64"))return;
         byte[] bytes=android.util.Base64.decode(data.substring(comma+1),android.util.Base64.DEFAULT);
         if(offlinePlayer!=null){offlinePlayer.release();offlinePlayer=null;}
-        File audio=new File(getCacheDir(),"word-offline.wav");try(FileOutputStream out=new FileOutputStream(audio)){out.write(bytes);}
+        File audio=new File(getCacheDir(),"word-offline.mp3");try(FileOutputStream out=new FileOutputStream(audio)){out.write(bytes);}
         offlinePlayer=new android.media.MediaPlayer();offlinePlayer.setDataSource(audio.getAbsolutePath());
         offlinePlayer.setOnCompletionListener(new android.media.MediaPlayer.OnCompletionListener(){@Override public void onCompletion(android.media.MediaPlayer p){p.release();if(offlinePlayer==p)offlinePlayer=null;}});
-        offlinePlayer.prepare();offlinePlayer.start();
+        offlinePlayer.setOnPreparedListener(new android.media.MediaPlayer.OnPreparedListener(){@Override public void onPrepared(android.media.MediaPlayer p){if(offlinePlayer==p)p.start();}});
+        offlinePlayer.setOnErrorListener(new android.media.MediaPlayer.OnErrorListener(){@Override public boolean onError(android.media.MediaPlayer p,int what,int extra){p.release();if(offlinePlayer==p)offlinePlayer=null;message("单词音频播放失败");return true;}});
+        offlinePlayer.prepareAsync();
       }catch(Exception ex){message("离线语音播放失败");}
     }});}
     @JavascriptInterface public void stopOfflineAudio(){runOnUiThread(new Runnable(){@Override public void run(){if(offlinePlayer!=null){offlinePlayer.release();offlinePlayer=null;}}});}
-    @JavascriptInterface public void speak(final String text){runOnUiThread(new Runnable(){@Override public void run(){
-      if(ttsReady){tts.setSpeechRate(.85f);tts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"word");}else message("本机还没有可用的美式英语离线语音");
-    }});}
     @JavascriptInterface public void copyText(final String text){runOnUiThread(new Runnable(){@Override public void run(){if(text!=null&&text.length()<1000000){((ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("word",text));}}});}
     @JavascriptInterface public void openLink(final String url){runOnUiThread(new Runnable(){@Override public void run(){openExternal(url);}});}
     @JavascriptInterface public void exportData(final String text,final String name,final String mime){runOnUiThread(new Runnable(){@Override public void run(){
@@ -326,7 +310,7 @@ public class MainActivity extends Activity {
       runOnUiThread(new Runnable(){@Override public void run(){web.reload();message("更新完成，学习记录已保留");}});
     }catch(Exception e){runOnUiThread(new Runnable(){@Override public void run(){message("更新失败，请检查网络后重试");}});}finally{hideUpdateProgress();syncing=false;}}},"word-content-sync").start();
   }
-  @Override protected void onPause(){if(web!=null){js("window.ChuiyiWords && window.ChuiyiWords.suspend()");web.onPause();}if(tts!=null)tts.stop();if(offlinePlayer!=null){offlinePlayer.release();offlinePlayer=null;}super.onPause();}
+  @Override protected void onPause(){if(web!=null){js("window.ChuiyiWords && window.ChuiyiWords.suspend()");web.onPause();}if(offlinePlayer!=null){offlinePlayer.release();offlinePlayer=null;}super.onPause();}
   @Override protected void onResume(){super.onResume();if(web!=null){web.onResume();js("window.ChuiyiWords && window.ChuiyiWords.resume()");}}
-  @Override protected void onDestroy(){if(updateProgress!=null){updateProgress.dismiss();updateProgress=null;}if(Build.VERSION.SDK_INT>=33&&backCallback!=null)Api33.unregister(this,backCallback);if(tts!=null){tts.stop();tts.shutdown();}if(web!=null){web.removeJavascriptInterface("AndroidBridge");web.destroy();web=null;}super.onDestroy();}
+  @Override protected void onDestroy(){if(updateProgress!=null){updateProgress.dismiss();updateProgress=null;}if(Build.VERSION.SDK_INT>=33&&backCallback!=null)Api33.unregister(this,backCallback);if(web!=null){web.removeJavascriptInterface("AndroidBridge");web.destroy();web=null;}super.onDestroy();}
 }

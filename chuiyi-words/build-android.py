@@ -20,6 +20,8 @@ def run(*cmd):
  subprocess.run([str(x) for x in cmd],check=True,cwd=R)
 run('node','--check',R/'app'/'app.js')
 run(sys.executable,R/'build-web.py')
+assert B.resolve().is_relative_to(R.resolve()) and B.name=='build'
+if B.exists():shutil.rmtree(B)
 for p in [B/'generated',B/'classes',B/'dex',D]:p.mkdir(parents=True,exist_ok=True)
 shutil.copytree(R/'app',B/'assets'/'app',dirs_exist_ok=True)
 for name in ['catalog.json','shared.json','editor-kit.js']:(B/'assets'/'app'/name).unlink(missing_ok=True)

@@ -1,8 +1,7 @@
 android/build/
 dist/
+work/
+__pycache__/
 *.p12
 *.jks
-*.keystore
 password.txt
-.env
-__pycache__/
