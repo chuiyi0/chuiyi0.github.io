@@ -1,0 +1,60 @@
+# 吹衣单词：推送后自动部署到 Cloudflare Pages（项目 chuiyi）
+# - 推送到 main      → 正式网站 https://chuiyi.pages.dev
+# - 推送到其他分支   → 预览网址（https://<分支名>.chuiyi.pages.dev）
+# 需要仓库 Secret：CLOUDFLARE_API_TOKEN（Cloudflare Pages 编辑权限）
+# 安卓下载信息沿用线上当前版本；发布新 APK 时仍按原流程用 build-deploy.py --apk 手动部署。
+name: Deploy chuiyi-words to Cloudflare Pages
+
+on:
+  push:
+    paths:
+      - 'chuiyi-words/app/**'
+      - 'chuiyi-words/deployment/**'
+      - 'chuiyi-words/build-deploy.py'
+      - '.github/workflows/deploy-words.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-words-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: 9c8eeb7470e68306582dd136c8686a0e
+      PAGES_PROJECT: chuiyi
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check chuiyi-words/app/app.js
+          node --check chuiyi-words/deployment/worker.js
+
+      - name: Build upload folder
+        run: python chuiyi-words/build-deploy.py --release-url https://chuiyi.pages.dev/words/app-release.json --out "$RUNNER_TEMP/pages"
+
+      - name: Deploy
+        working-directory: ${{ runner.temp }}/pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          npx --yes wrangler@4 pages deploy . \
+            --project-name "$PAGES_PROJECT" \
+            --branch "$BRANCH" \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "$(printf '%s' "$COMMIT_MSG" | head -n 1 | cut -c1-200)"
