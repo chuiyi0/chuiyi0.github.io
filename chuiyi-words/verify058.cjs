@@ -1,0 +1,24 @@
+const fs=require('fs'),path=require('path'),assert=require('assert'),{JSDOM}=require('jsdom');
+const root=__dirname,source=fs.readFileSync(root+'/app/app.js','utf8'),catalog=JSON.parse(fs.readFileSync(root+'/app/catalog.json','utf8')),shared=JSON.parse(fs.readFileSync(root+'/app/shared.json','utf8'));
+const density=catalog.entries.find(w=>w.word==='density'),resort=catalog.entries.find(w=>w.word==='resort');
+const markdown='- **density**\n\t- 北京、上海等城市有很高的人口**n.密度**\n\t- @等城市 → deng city → density\n\t- /dens = 密度；-ity = 性质';
+for(const editor of [false,true]){
+ const dom=new JSDOM('<meta name="theme-color"><div id="app"></div><div id="toast"></div><div id="modal"></div>',{url:'https://qa.example/',runScripts:'outside-only'}),w=dom.window;
+ w.structuredClone=structuredClone;w.CY_CONFIG={editor,localServer:false};w.CY_CATALOG=structuredClone(catalog);w.CY_SHARED=structuredClone(shared);w.CY_SHARED.words[density.id]={markdown,note:'已有联想放回正文'};w.CY_SKINS=[{id:'paper',name:'paper',colors:['#fff','#fff','#fff','#000'],swatches:['#fff','#000']}];w.CY_ART={normalizeScene:x=>x};w.scrollTo=()=>{};w.requestAnimationFrame=()=>{};w.setInterval=()=>{};w.setTimeout=()=>{};w.CYTheme={get:()=>'paper',compactPreview:()=>'',apply:()=>{},set:()=>{}};
+ const cut=source.indexOf('try{const r=JSON.parse(decodeURIComponent(location.hash.slice(1)));');
+ w.eval(source.slice(0,cut)+`function phrasesPage(){return ""};window.TEST={memoryHtml058,serializeMemory058,mergeMemory058,storyHtml,storyPage,familyPage,header,doneButton,saveStory048,metaInput048,saveUnified055,exportBook048,meta,getWord,readState,wordPage,completedPage,storyList,get saved(){return saved},setRoute:r=>{stack=[r]},render};})();`);
+ const t=w.TEST,html=t.memoryHtml058(markdown),box=w.document.createElement('div');box.innerHTML=html;
+ assert.equal(box.querySelectorAll('ul').length,2);assert.equal(box.querySelectorAll('li').length,4);assert.equal(box.querySelectorAll('strong').length,2);assert(box.textContent.includes('@等城市'));assert(box.textContent.includes('/dens ='));
+ const round=t.serializeMemory058(box),back=w.document.createElement('div');back.innerHTML=t.memoryHtml058(round);assert.equal(back.innerHTML,box.innerHTML);
+ const advanced='# 标题\n\n> 引用\n\n1. 第一项\n2. 第二项\n\n==高亮== 和 `code`\n\n| A | B |\n| --- | --- |\n| 1 | 2 |';box.innerHTML=t.memoryHtml058(advanced);assert(box.querySelector('h1'));assert(box.querySelector('blockquote'));assert(box.querySelector('ol'));assert(box.querySelector('mark'));assert(box.querySelector('table'));back.innerHTML=t.memoryHtml058(t.serializeMemory058(box));assert(back.querySelector('table'));assert(back.querySelector('mark'));
+ box.innerHTML=t.memoryHtml058('[unsafe](javascript:alert(1))<script>alert(1)</script><img src=x onerror=alert(1)>');assert(!box.querySelector('script,img'));assert(!box.innerHTML.includes('javascript:'));
+ t.setRoute({name:'word',id:density.id});const page=t.wordPage();assert(page.includes('记忆笔记'));assert(!page.includes('联想提示'));assert(page.includes('已有联想放回正文'));assert(t.header().includes('}熟词')===false);assert(t.header().includes('熟</button>'));assert(!t.header().includes('熟词</button>'));assert(page.includes('学完了'));
+ w.localStorage.setItem('cy-words-show-phrases','0');assert(t.wordPage().includes('class="local-phrases" hidden'));
+ assert.equal(t.mergeMemory058('main\n\nhint','hint'),'main\n\nhint');
+ if(editor){w.document.getElementById('app').innerHTML=page;const el=w.document.getElementById('direct-story');el.innerHTML=t.memoryHtml058(markdown);t.saveStory048();const data=t.readState().edits[density.id];assert(!data.note);box.innerHTML=t.memoryHtml058(data.markdown);assert.equal(box.querySelectorAll('li').length,4);assert(box.textContent.includes('@等城市'));t.render();w.document.querySelector('[data-memory-command="source"]').click();const ta=w.document.getElementById('direct-story');assert.equal(ta.tagName,'TEXTAREA');ta.value=markdown+'\n\n新增';ta.dispatchEvent(new w.Event('input',{bubbles:true}));assert(t.readState().edits[density.id].markdown.endsWith('新增'));w.document.querySelector('[data-memory-command="source"]').click();assert.equal(w.document.getElementById('direct-story').querySelectorAll('li').length,4);
+ t.saved.bookMeta={name:'test',families:{[density.family_id]:{story:'family',hint:'legacy hint'}},stories:[{id:'story-custom',title:'custom',text:'custom',hint:'legacy cue',entry_ids:[density.id,resort.id]}]};t.setRoute({name:'family',id:density.family_id});const f=t.familyPage();assert(f.includes('legacy hint'));assert(!f.includes('联想提示'));t.setRoute({name:'story',id:'story-custom'});const s=t.storyPage();assert(s.includes('legacy cue'));assert(!s.includes('联想提示'));assert.equal(t.saved.bookMeta.stories[0].hint,'');
+ }
+ console.log('PASS',editor?'editor':'public','nested Markdown, literal markers, round-trip, highlights/table, migration, source editing, visibility');dom.window.close();
+}
+
+

@@ -1,6 +1,6 @@
 # 吹衣单词 · 吹衣词族故事1
 
-版本 0.5.4，Android versionCode 27。
+版本 0.5.8，Android versionCode 31。
 
 - 7375 个词条、5032 个词族。age、add、up、ox 默认仅作词族参考，7371 个词条参与独立学习。
 - 内置自然美式英语音频，覆盖所有独立学习词。手机播放无需联网或语音引擎；音频不是人工录音。
@@ -36,3 +36,8 @@ https://creativecommons.org/licenses/by/4.0/
 
 
 共用部署：见 deployment/README.md。test、网页、安卓共用 app/app.js 和自然发音，只由配置启用编辑能力。
+
+
+0.5.8：记忆笔记统一使用 Markdown 渲染，旧 note/hint 内容并入正文，普通 @ 和 / 不带特殊语义。熟为熟词状态；学完了记录学习完成。短语与搭配可从单词右上角菜单切换并记住。词书名称和原数据 ID 保持兼容。
+
+前端内嵌 marked 15.0.12、DOMPurify 3.2.7、Turndown 7.2.0，来源及许可保存在 vendor/。app/app.js 包含共享解析器和 memory-notes.js 的运行逻辑；客户端无需外部 CDN。
