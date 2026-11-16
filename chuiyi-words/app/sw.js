@@ -1,4 +1,4 @@
-const CACHE='chuiyi-words-0.5.5';
+const CACHE='chuiyi-words-0.5.6';
 const FILES=['./','index.html','styles.css','themes.js','config.js','i18n.js','art.js','local-state.js','catalog.js','shared.js','app.js','natural-voice.js','voice-manifest.js','icon.svg','manifest.webmanifest'];
 self.window=self;
 importScripts('voice-manifest.js');
