@@ -1,8 +1,8 @@
 // Shared learning UI and speech. The protected editor keeps its auth and data APIs.
 const SITE_ORIGIN = 'https://7cf5edf3.chuiyi.pages.dev';
 const EDITOR_ORIGIN = 'https://7cf5edf3.chuiyi.pages.dev';
-const SHARED_VERSION = "0.5.6";
-const RELEASE = {"versionName":"0.5.6","versionCode":29,"path":"downloads/chuiyi-words-0.5.6.apk","sha256":"36e239c9e1671e6c94e72941f15e4a43efc0db16f4a754c421ea1632560cea25","size":18122257};
+const SHARED_VERSION = "0.5.7";
+const RELEASE = {"versionName":"0.5.7","versionCode":30,"path":"downloads/chuiyi-words-0.5.7.apk","sha256":"80d5306bb11a77458dcc08313a71212e364c66c8ef08b0dba185946099d034a1","size":18122257};
 
 function changed(body, original, type) {
  const headers = new Headers(original.headers);
@@ -38,9 +38,9 @@ export default {async fetch(request,env) {
  const url=new URL(request.url),p=url.pathname,read=['GET','HEAD'].includes(request.method);
  if(read&&['/words/app-release.json','/words/app-update.json'].includes(p))return Response.json(RELEASE,{headers:{'cache-control':'no-store'}});
  if(read&&p==='/words/'+RELEASE.path){
-  const object=await env.WORDS_RELEASES.get('chuiyi-words-0.5.6.apk');
+  const object=await env.WORDS_RELEASES.get('chuiyi-words-0.5.7.apk');
   if(!object)return new Response('Not found',{status:404});
-  return new Response(request.method==='HEAD'?null:object.body,{headers:{'content-type':'application/vnd.android.package-archive','content-length':String(object.size),'cache-control':'public,max-age=31536000,immutable','content-disposition':'attachment; filename=chuiyi-words-0.5.6.apk'}});
+  return new Response(request.method==='HEAD'?null:object.body,{headers:{'content-type':'application/vnd.android.package-archive','content-length':String(object.size),'cache-control':'public,max-age=31536000,immutable','content-disposition':'attachment; filename=chuiyi-words-0.5.7.apk'}});
  }
  if(read&&/^\/words\/(?:app\.js|i18n\.js|natural-voice\.js|voice-manifest\.js|sw\.js|audio\/voice-\d{3}\.js)$/.test(p)){
   const response=await env.ASSETS.fetch(request);
@@ -66,7 +66,7 @@ export default {async fetch(request,env) {
  }
  if(type.includes('text/html')&&['/words/','/words/index.html','/test/project/','/test/project/index.html'].includes(p)){
   let html=await original.text();
-  html=html.replace(/(src=["'](?:[^"']*\/)?(?:app|voice-engine|natural-voice|voice-manifest)\.js)(?:\?[^"']*)?(["'])/g,'$1?v=shared056b$2');
+  html=html.replace(/(src=["'](?:[^"']*\/)?(?:app|voice-engine|natural-voice|voice-manifest)\.js)(?:\?[^"']*)?(["'])/g,'$1?v=shared057b$2');
   html=html.replace('</head>','<meta name="cy-shared-version" content="'+SHARED_VERSION+'"></head>');
   return changed(html,original,'text/html; charset=utf-8');
  }
