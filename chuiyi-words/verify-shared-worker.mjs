@@ -1,13 +1,26 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
 const base=new URL('./dist/pages/',import.meta.url);
 const worker=(await import(new URL('_worker.js',base).href)).default;
-const env={ASSETS:{async fetch(req){try{return new Response(fs.readFileSync(new URL('.'+new URL(req.url).pathname,base)),{headers:{'content-type':'application/javascript'}})}catch{return new Response('missing',{status:404})}}}};
-globalThis.fetch=async req=>{const p=new URL(req.url).pathname;if(p.startsWith('/test/')&&!req.headers.has('cookie'))return new Response('sign in',{status:401});if(p.endsWith('.js'))return new Response('// old script',{headers:{'content-type':'application/javascript'}});return new Response('<head></head><script src="voice-engine.js"></script><script src="app.js?v=old"></script>',{headers:{'content-type':'text/html'}})};
-const req=(path,auth=false)=>new Request('https://unit.example'+path,{headers:auth?{cookie:'mock-existing-session'}:{}});
-const pub=await(await worker.fetch(req('/words/app.js'),env)).text();
-assert(pub.includes("['age','add','up','ox']"));
-for(const path of ['/test/app.js','/test/project/app.js']){assert.equal((await worker.fetch(req(path),env)).status,401);const s=await(await worker.fetch(req(path,true),env)).text();assert(s.endsWith(pub));assert(s.includes('CY_EDITOR_KIT'))}
-for(const path of ['/test/voice-engine.js','/test/project/voice-engine.js']){const s=await(await worker.fetch(req(path,true),env)).text();assert(s.includes('CYVoiceAudio'));assert(s.includes('CY_VOICE_ASSET_BASE'));assert(!s.includes('CYVoiceFactory'))}
-const html=await(await worker.fetch(req('/test/project/',true),env)).text();assert(html.includes('cy-shared-version'));assert(!html.includes('app.js?v=old'));
-console.log('PASS shared public/test app, protected aliases, natural speech and cache version');
+const env={ASSETS:{async fetch(req){const p=new URL(req.url).pathname;const file=new URL('.'+p,base);try{return new Response(fs.readFileSync(file),{headers:{'content-type':'application/javascript'}})}catch{return new Response('missing',{status:404})}}}};
+globalThis.fetch=async request=>{
+ const p=new URL(request.url).pathname;
+ if(p.startsWith('/test/')&&!request.headers.has('cookie'))return new Response('sign in',{status:401});
+ if(p.endsWith('.js'))return new Response('// old asset',{headers:{'content-type':'application/javascript'}});
+ return new Response('<html><head></head><body><script src="voice-engine.js"></script><script src="app.js?v=old"></script></body></html>',{headers:{'content-type':'text/html'}});
+};
+const request=(path,authenticated=false)=>new Request('https://unit.example'+path,{headers:authenticated?{cookie:'mock-existing-session'}:{}});
+const publicApp=await (await worker.fetch(request('/words/app.js'),env)).text();
+assert(publicApp.includes("['age','add','up','ox']"));
+const denied=await worker.fetch(request('/test/project/app.js'),env);assert.equal(denied.status,401);
+const editorApp=await (await worker.fetch(request('/test/project/app.js',true),env)).text();
+assert(editorApp.endsWith(publicApp));assert(editorApp.includes('CY_EDITOR_KIT'));
+const editorAlias=await (await worker.fetch(request('/test/app.js',true),env)).text();assert(editorAlias.endsWith(publicApp));assert.equal((await worker.fetch(request('/test/app.js'),env)).status,401);
+const voiceAlias=await (await worker.fetch(request('/test/voice-engine.js',true),env)).text();assert(voiceAlias.includes('CYVoiceAudio'));
+const voice=await (await worker.fetch(request('/test/project/voice-engine.js',true),env)).text();
+assert(voice.includes('CY_VOICE_ASSET_BASE'));assert(voice.includes('CYVoiceAudio'));assert(!voice.includes('CYVoiceFactory'));
+const html=await (await worker.fetch(request('/test/project/',true),env)).text();
+assert(html.includes('app.js?v=shared055'));assert(html.includes('voice-engine.js?v=shared055'));
+assert(html.includes('cy-shared-version'));
+console.log('PASS shared public/editor code, protected assets, natural speech and cache-version routing');
