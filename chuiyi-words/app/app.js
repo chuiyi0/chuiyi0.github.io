@@ -1389,6 +1389,16 @@ document.addEventListener('input',e=>{if(!EDITOR||!e.target.matches('textarea#di
 .memory-tip textarea{box-sizing:border-box;width:100%;min-height:3.2em;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;line-height:1.6;resize:vertical}
 `;document.head.append(s)})();
 
+/* 0.5.10 新笔记格式：“联想 / 词根 / 注释”等单独一行的小标题显示成分区标签；引用块显示成故事句。 */
+const memoryHtml0510=memoryHtml058;
+const LABELS0510='联想|词根|注释|故事|例句|提示|搭配';
+memoryHtml058=function(text){text=String(text||'').replace(new RegExp('\\n[ \\t]*('+LABELS0510+')[ \\t]*(?=\\n|$)','g'),'\n\n$1');return memoryHtml0510(text).replace(/<p>(联想|词根|注释|故事|例句|提示|搭配)<\/p>/g,'<p class="memory-label">$1</p>')};
+(()=>{const s=document.createElement('style');s.textContent=`
+.memory-markdown p.memory-label,.story-wysiwyg p.memory-label{margin:14px 0 4px;font-size:.8rem;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.memory-markdown blockquote,.story-wysiwyg blockquote{margin:4px 0 10px;padding:10px 14px;border-left:3px solid color-mix(in srgb,var(--text) 30%,transparent);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--panel) 70%,var(--bg));font-size:1.04rem;line-height:1.75}
+.memory-markdown blockquote p,.story-wysiwyg blockquote p{margin:0}
+.memory-markdown ul,.story-wysiwyg ul{margin-top:2px}
+`;document.head.append(s)})();
 try{const r=JSON.parse(decodeURIComponent(location.hash.slice(1)));if((r.name==='word'||r.name==='editor'&&EDITOR)&&words.has(r.id)){stack=[{name:'home',scroll:0}];sync(true);if(r.name==='editor'){stack.push({name:'word',id:r.id,scroll:0});sync()}stack.push({...r,name:r.name==='editor'?'word':r.name,scroll:0});sync()}else if((['settings','wordlist','families','history','stats','themes','backup','about','search','stories','story','family','recent','books','completed','day'].includes(r.name)||EDITOR&&r.name==='phrases')){stack.push({...r,name:r.name==='editor'?'word':r.name,scroll:0});sync()}}catch(e){}sync(true);render();
 addEventListener('cy-theme',()=>{saved.settings.theme=CYTheme.get();applyTheme();const s=CY_SKINS.find(x=>x.id===CYTheme.get());if(s)document.querySelectorAll('.quick-skin-orb').forEach(e=>e.style.background='conic-gradient('+s.swatches.map((c,i)=>c+' '+(i*120)+'deg '+((i+1)*120)+'deg').join(',')+')')});
 addEventListener('cy-language',()=>{snapshot();render(true)});
