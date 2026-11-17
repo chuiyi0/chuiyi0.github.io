@@ -1393,6 +1393,7 @@ document.addEventListener('input',e=>{if(!EDITOR||!e.target.matches('textarea#di
 const memoryHtml0510=memoryHtml058;
 const LABELS0510='联想|词根|注释|故事|例句|提示|搭配';
 memoryHtml058=function(text){text=String(text||'').replace(new RegExp('\\n[ \\t]*('+LABELS0510+')[ \\t]*(?=\\n|$)','g'),'\n\n$1');return memoryHtml0510(text).replace(/<p>(联想|词根|注释|故事|例句|提示|搭配)<\/p>/g,'<p class="memory-label">$1</p>')};
+markdownRich048=memoryHtml058;
 (()=>{const s=document.createElement('style');s.textContent=`
 .memory-markdown p.memory-label,.story-wysiwyg p.memory-label{margin:14px 0 4px;font-size:.8rem;font-weight:700;letter-spacing:.08em;color:var(--muted)}
 .memory-markdown blockquote,.story-wysiwyg blockquote{margin:4px 0 10px;padding:10px 14px;border-left:3px solid color-mix(in srgb,var(--text) 30%,transparent);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--panel) 70%,var(--bg));font-size:1.04rem;line-height:1.75}
