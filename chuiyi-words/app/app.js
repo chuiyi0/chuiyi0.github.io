@@ -1058,6 +1058,14 @@ try{localStorage.setItem('chuiyi-ui-lang','zh');window.ChuiyiI18n?.setLanguage?.
 const EDITOR=window.CY_CONFIG?.editor===true;
 const L=(zh,en)=>zh;
 const C=window.CY_CATALOG,S=window.CY_SHARED,KEY=EDITOR?'chuiyi-words-private-editor-v1':'chuiyi-words-v2',DRAFT='chuiyi-word-draft-',app=document.getElementById('app');
+const mdRelease=window.CY_MD_RELEASE;
+if(mdRelease&&!localStorage.getItem('cy-imported-book')){
+ C.extraPhrases=mdRelease.extraPhrases;
+ for(const [id,patch] of Object.entries(mdRelease.edits)){
+  S.words[id]={...S.words[id],...patch};
+  if(Object.hasOwn(patch,'markdown'))S.words[id].note='';
+ }
+}
 function pruneBookWords(catalog,shared,removed){
  const ids=new Set(Object.keys(removed||{}).filter(id=>removed[id]===true)),entries=catalog.entries.filter(w=>!ids.has(w.id)),byId=new Map(entries.map(w=>[w.id,w]));
  const keptFamilies=catalog.families.map(f=>{const entry_ids=f.entry_ids.filter(id=>byId.has(id));return {...f,entry_ids,words:entry_ids.map(id=>byId.get(id).word)}}).filter(f=>f.entry_ids.length);
@@ -1072,7 +1080,9 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const rich=s=>esc(s).replace(/==([^=]+)==/g,'<mark>$1</mark>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');
 function clampSize(v,min,max){return Number.isFinite(Number(v))?Math.max(min,Math.min(max,Number(v))):1}
 function normalize(v){const n=fresh(),s=v?.settings||{};n.settings.theme=skins[s.theme]?s.theme:'paper';n.settings.scale=[1,1.12,1.24].includes(s.scale)?s.scale:1;n.settings.motion=s.motion!==false;n.settings.posScale=clampSize(s.posScale,.75,1.3);n.settings.artScale=clampSize(s.artScale,.6,1.7);
- for(const [id,e] of Object.entries(v?.edits||{})){if(!words.has(id)||!e||typeof e!=='object')continue;const x={};if(e.drawing&&CY_ART.normalizeScene(e.drawing))x.drawing=CY_ART.normalizeScene(e.drawing);if(typeof e.note==='string')x.note=e.note.slice(0,10000);if(typeof e.tip==='string')x.tip=e.tip.slice(0,5000);if(typeof e.markdown==='string')x.markdown=e.markdown.slice(0,50000);if(typeof e.ipa_us==='string')x.ipa_us=e.ipa_us.slice(0,400);if(Array.isArray(e.meanings)&&e.meanings.length)x.meanings=e.meanings.slice(0,60).filter(m=>m&&typeof m.zh==='string').map(m=>({zh:m.zh.slice(0,1500),pos:String(m.pos||'').slice(0,50),primary:!!m.primary,sense_group:String(m.sense_group||'').slice(0,40)}));if(Array.isArray(e.collocations))x.collocations=e.collocations.slice(0,150).filter(p=>Array.isArray(p)&&p.length===2).map(p=>p.map(s=>String(s).slice(0,2000)));n.edits[id]=x;}
+ for(const [id,e] of Object.entries(v?.edits||{})){if(!words.has(id)||!e||typeof e!=='object')continue;const x={};if(e.drawing&&CY_ART.normalizeScene(e.drawing))x.drawing=CY_ART.normalizeScene(e.drawing);if(typeof e.note==='string')x.note=e.note.slice(0,10000);if(typeof e.tip==='string')x.tip=e.tip.slice(0,5000);if(typeof e.markdown==='string')x.markdown=e.markdown.slice(0,50000);if(typeof e.ipa_us==='string')x.ipa_us=e.ipa_us.slice(0,400);if(Array.isArray(e.meanings)&&e.meanings.length)x.meanings=e.meanings.slice(0,60).filter(m=>m&&typeof m.zh==='string').map(m=>({zh:m.zh.slice(0,1500),pos:String(m.pos||'').slice(0,50),primary:!!m.primary,sense_group:String(m.sense_group||'').slice(0,40)}));if(Array.isArray(e.collocations))x.collocations=e.collocations.slice(0,150).filter(p=>Array.isArray(p)&&p.length===2).map(p=>p.map(s=>String(s).slice(0,2000)));if(typeof e.word==='string'&&e.word.length<=200)x.word=e.word;n.edits[id]=x;}
+ if(EDITOR&&typeof v?.mdRevision==='string')n.mdRevision=v.mdRevision;
+ if(EDITOR&&Array.isArray(v?.mdExtra))n.mdExtra=v.mdExtra;
  n.history=Array.isArray(v?.history)?v.history.filter(h=>words.has(h?.id)&&Number.isFinite(h.at)).slice(0,C.entries.length):[];
  for(const id of Object.keys(v?.mastered||{}))if(words.has(id)&&v.mastered[id])n.mastered[id]=true;
  for(const [id,num] of Object.entries(v?.views||{}))if(words.has(id)&&Number.isFinite(num))n.views[id]=Math.max(0,Math.min(Math.floor(num),1e8));
@@ -1105,14 +1115,14 @@ addEventListener('popstate',e=>{if(e.state?.cyStack){leave();stack=e.state.cySta
 function showModal(title,body,label,fn){modal=fn;document.getElementById('modal').innerHTML=`<div class="modal-bg"><section class="modal-card" role="dialog" aria-modal="true"><h2>${esc(title)}</h2><p>${esc(body)}</p><div class="modal-actions"><button class="secondary" data-action="cancel">取消</button><button class="primary" data-action="confirm">${esc(label)}</button></div></section></div>`;nativeBack();document.querySelector('[data-action=cancel]').focus()}
 function closeModal(){modal=null;document.getElementById('modal').innerHTML='';nativeBack()}
 function nav(){const n=current().name;if(n==='word'){const ids=studyWords(),i=ids.indexOf(current().id);return `<nav class="bottom-nav"><button data-action="previous-word" ${i<=0?'disabled':''}>上一个</button><button disabled aria-label="预留按钮">—</button><button data-action="next-word" ${i<0||i>=ids.length-1?'disabled':''}>下一个</button></nav>`}const t=n==='home'||n==='word'?'home':n==='history'?'history':'settings';return `<nav class="bottom-nav" aria-label="主导航">${[['home','学习'],['history','统计'],['settings','设置']].map(([id,l])=>`<button data-tab="${id}" class="${id===t?'active':''}">${l}</button>`).join('')}</nav>`}
-function header(){const root=current().name==='home',word=current().name==='word',id=current().id;const skin=CY_SKINS.find(s=>s.id===CYTheme.get())||CY_SKINS.find(s=>s.id==='paper');const picker=`<button class="quick-skin" data-action="shared-skins" aria-label="切换皮肤" title="切换皮肤">${CYTheme.compactPreview()}</button>`;return `<header class="header"><div class="header-inner">${root?'':`<button class="icon-button back" data-action="back" aria-label="返回">←</button>`}<div class="brand">${root?'吹衣单词':esc({word:'单词',settings:'设置',search:'搜索',wordlist:'词表',families:'词族',family:'词族',history:'统计',stats:'统计',themes:'外观',editor:'编辑原稿',phrases:'短语与搭配',backup:'数据备份',about:'关于'}[current().name]||'吹衣单词')}</div><div class="header-actions">${root||word?picker:''}${word?`<button class="known-button" data-action="master" data-id="${id}" aria-pressed="${!!saved.mastered[id]}">${saved.mastered[id]?'✓ ':''}熟</button><div class="word-menu-wrap"><button class="icon-button more-button" data-action="menu" aria-label="更多操作" aria-expanded="false">⋯</button><div id="word-menu" class="word-menu hidden"><button type="button" data-phrase-display></button>${EDITOR?`<button type="button" data-family-reference="${esc(id)}">${familyOnly(id)?'恢复独立学习':'仅保留在词族'}</button><button type="button" data-action="delete-book-word" data-id="${esc(id)}">从词书删除</button>`:''}<button data-action="language">${L('界面语言：English','Interface language: 中文')}</button><button data-route="${routeAttr({name:'settings'})}">设置</button></div></div>`:current().name==='editor'&&EDITOR?'<button class="secondary" data-action="save-edit">保存并返回</button>':''}</div></div></header>`}
+function header(){const root=current().name==='home',word=current().name==='word',id=current().id;const skin=CY_SKINS.find(s=>s.id===CYTheme.get())||CY_SKINS.find(s=>s.id==='paper');const picker=`<button class="quick-skin" data-action="shared-skins" aria-label="切换皮肤" title="切换皮肤">${CYTheme.compactPreview()}</button>`;return `<header class="header"><div class="header-inner">${root?'':`<button class="icon-button back" data-action="back" aria-label="返回">←</button>`}<div class="brand">${root?'吹衣单词':esc({word:'单词',settings:'设置',search:'搜索',wordlist:'词表',families:'词族',family:'词族',history:'统计',stats:'统计',themes:'外观',editor:'编辑原稿',phrases:'短语与搭配',phrase:'短语详情',backup:'数据备份',about:'关于'}[current().name]||'吹衣单词')}</div><div class="header-actions">${root||word?picker:''}${word?`<button class="known-button" data-action="master" data-id="${id}" aria-pressed="${!!saved.mastered[id]}">${saved.mastered[id]?'✓ ':''}熟</button><div class="word-menu-wrap"><button class="icon-button more-button" data-action="menu" aria-label="更多操作" aria-expanded="false">⋯</button><div id="word-menu" class="word-menu hidden"><button type="button" data-phrase-display></button>${EDITOR?`<button type="button" data-family-reference="${esc(id)}">${familyOnly(id)?'恢复独立学习':'仅保留在词族'}</button><button type="button" data-action="delete-book-word" data-id="${esc(id)}">从词书删除</button>`:''}<button data-action="language">${L('界面语言：English','Interface language: 中文')}</button><button data-route="${routeAttr({name:'settings'})}">设置</button></div></div>`:current().name==='editor'&&EDITOR?'<button class="secondary" data-action="save-edit">保存并返回</button>':''}</div></div></header>`}
 function searchBox(q='',id='search-input',placeholder='单词、中文、搭配或故事关键词'){return `<div class="search"><input type="search" id="${id}" aria-label="搜索单词" placeholder="${placeholder}" value="${esc(q)}" autocomplete="off"></div>`}
 function row(id,end=''){const w=getWord(id);return `<button class="word-row" data-word="${id}"><span><strong>${esc(w.word)}</strong><small>${esc(w.meanings.map(m=>m.zh).slice(0,3).join('；'))}</small></span><span class="row-end">${end||(familyOnly(id)?'参考词':((w.markdown||'').trim()?'有故事':'›'))}</span></button>`}
 function homePage(){const last=saved.lastWord||byName.get('resort'),w=getWord(last);return `<section class="subpage"><div class="home-head"><div><h1>让单词留下痕迹。</h1><p>${C.entries.length.toLocaleString()} 个词 · 故事和提示一起看</p></div><div class="home-stamp" aria-hidden="true">词</div></div>${searchBox('','home-search')}<button class="panel continue" data-word="${last}"><span><small>${saved.lastWord?'继续上次浏览':'从你的故事开始'}</small><strong>${esc(w.word)}</strong><small>${esc(w.meanings[0].zh)}</small></span><span>→</span></button><div class="section-title"><h2>我的记忆故事</h2><button class="text-button" data-route="${routeAttr({name:'wordlist',filter:'stories'})}">全部故事 →</button></div><div class="quick-words">${Object.keys({...S.words,...saved.edits}).filter(id=>(getWord(id).markdown||'').trim()).slice(0,12).map(id=>`<button class="quick-word" data-word="${id}">${esc(words.get(id).word)}</button>`).join('')}</div><button type="button" class="panel home-family-entry row spread" data-route="${routeAttr({name:'families'})}"><span>从词族开始</span><span aria-hidden="true">→</span></button></section>`}
 function meaningHtml(w){const groups=new Map();w.meanings.forEach((m,i)=>{const pos=m.pos||'—';if(!groups.has(pos))groups.set(pos,new Map());const senses=groups.get(pos),key=m.sense_group||words.get(w.id)?.meanings.find(b=>b.pos===pos&&b.zh===m.zh)?.sense_group||'meaning-'+i;if(!senses.has(key))senses.set(key,[]);senses.get(key).push(m)});return `<div class="meaning-groups">${[...groups].map(([pos,senses])=>`<div class="pos-row"><span class="pos-badge">${esc(pos)}</span><div class="meaning-body">${[...senses.values()].map(ms=>ms.map(m=>m.primary?`<strong>${esc(m.zh)}</strong>`:esc(m.zh)).join('，')).join('；')}</div></div>`).join('')}</div>`}
 function parseMarkdown(text){return String(text||'').split(/\r?\n/).filter(t=>t.trim()).map(text=>({kind:'story',text}));}
 function storyHtml(w){const lines=parseMarkdown(w.markdown);return `<section class="panel story-panel"><div class="row spread"><h2>${L('单词故事与提示','Word story & tips')}</h2>${EDITOR?`<button class="secondary" data-route="${routeAttr({name:'editor',id:w.id,section:'story'})}">${L('修改','Edit')}</button>`:''}</div>${lines.length?`<div class="story-lines">${lines.map(l=>{const m=l.kind==='story'&&l.text.match(/^(.*?)\s=\s(.*)$/);return `<div class="story-line ${l.kind}">${m?rich(m[1])+`<div class="story-translation">${rich(m[2])}</div>`:rich(l.text)}</div>`}).join('')}</div>`:`<p class="muted empty-story">${L('这个词暂未添加记忆故事。','No memory story for this word yet.')}</p>`}${w.note?`<div class="note">${rich(Array.isArray(w.note)?w.note.join('\n'):w.note)}</div>`:''}</section>`}
-function collocationsHtml(w){return `<details class="local-phrases" open><summary><h2>${L('短语与搭配','Phrases & collocations')}</h2></summary><div class="usage-list">${w.collocations.length?w.collocations.map(p=>`<div class="bilingual-row"><span class="usage-en">${rich(p[0])}</span><span class="usage-zh">${rich(p[1])}</span></div>`).join(''):`<p class="muted">${L('暂未收录搭配。','No phrases recorded yet.')}</p>`}</div></details>`}
+function collocationsHtml(w){return `<details class="local-phrases" open><summary><h2>${L('短语与搭配','Phrases & collocations')}</h2></summary><div class="usage-list">${w.collocations.length?w.collocations.map(p=>`<div class="bilingual-row">${mdTool?phraseButton(p[0],rich(p[0])):`<span class="usage-en">${rich(p[0])}</span>`}<span class="usage-zh">${rich(p[1])}</span></div>`).join(''):`<p class="muted">${L('暂未收录搭配。','No phrases recorded yet.')}</p>`}</div></details>`}
 function familyHtml(w){const f=families.get(w.family_id),members=(f?.entry_ids||[w.id]).map(id=>words.get(id)?.word).filter(Boolean),root=f?.root||w.word;const candidates=[root,...members].filter(x=>/^[a-zA-Z][a-zA-Z'-]*$/.test(x));const category=candidates.sort((a,b)=>a.length-b.length)[0]||members[0]||w.word;return `<button type="button" class="compact-family" data-route="${routeAttr({name:'family',id:w.family_id})}" aria-label="查看${esc(root)}词族" title="${esc(root)}"><small>${L(f?.type==='主题组'?'词组':'词族',f?.type==='主题组'?'Topic':'Family')}</small><span class="family-category${category.length>10?' long':''}" data-user-content>${esc(category)}</span></button>`}
 function illustrationHtml(w){return ''}
 function sizeControls(){return `<div class="size-controls"><label>${L('词性尺寸','Part-of-speech size')}<output data-size-output="posScale">${Math.round(saved.settings.posScale*100)}%</output><input type="range" aria-label="${L('词性尺寸','Part-of-speech size')}" data-display-size="posScale" min=".75" max="1.3" step=".05" value="${saved.settings.posScale}"></label><label>${L('插画尺寸','Illustration size')}<output data-size-output="artScale">${Math.round(saved.settings.artScale*100)}%</output><input type="range" aria-label="${L('插画尺寸','Illustration size')}" data-display-size="artScale" min=".6" max="1.7" step=".05" value="${saved.settings.artScale}"></label><button class="text-button" data-action="reset-sizes">${L('恢复默认尺寸','Reset sizes')}</button></div>`}
@@ -1132,11 +1142,11 @@ function editorData(id){const w=getWord(id);let d;try{d=JSON.parse(localStorage.
 function editToWord(e){return {...getWord(e.id),ipa_us:e.ipa,meanings:e.meanings.filter(m=>m.zh.trim()).map((m,i)=>({...m,zh:m.zh.trim(),primary:i===0})),drawing:CY_ART.normalizeScene(e.drawing),collocations:e.collocations.filter(p=>p[0].trim()||p[1].trim()).map(p=>p.map(t=>t.trim())),markdown:e.markdown,note:e.note||''}}
 function previewEditor(){if(!EDITOR||!editor)return;const w=editToWord(editor);document.getElementById('editor-preview').innerHTML=`<h2>${L('内容预览','Live preview')}</h2>${meaningHtml(w)}${illustrationHtml(w)}${storyHtml(w)}${collocationsHtml(w)}`}
 function editorPage(){return EDITOR?storyHtml(getWord(current().id)):'';if(!EDITOR)return '';const id=current().id;if(!editor||editor.id!==id)editor=editorData(id);const e=editor,w=words.get(id);window.CY_EDITOR_KIT?.begin(e);return `<section><div class="heading"><h1>${esc(w.word)}</h1><p>${L('直接填写下面的输入栏，修改后自动保存。右侧可随时查看效果。','Edit the fields below. Changes save automatically, with a live preview alongside.')}</p></div>${window.CY_EDITOR_KIT?.toolbar()||''}${window.CY_EDITOR_KIT?.panel()||''}<details class="editor-size-options"><summary>${L('调整显示尺寸','Adjust display sizes')}</summary>${sizeControls()}</details><div class="editor-grid"><div class="editor-fields"><label for="edit-ipa">美式音标</label><input id="edit-ipa" data-edit="ipa" value="${esc(e.ipa)}"><div class="section-title"><h2>中文释义</h2><button class="secondary" data-action="add-meaning">＋ 添加义项</button></div><div class="meaning-edit-rows">${e.meanings.map((m,i)=>`<div class="meaning-edit-row"><input class="pos-input" data-meaning-pos="${i}" aria-label="词性" value="${esc(m.pos)}" list="pos-options"><input data-meaning-zh="${i}" aria-label="中文释义" value="${esc(m.zh)}"><button class="delete-row" data-action="remove-meaning" data-index="${i}" aria-label="删除">×</button><label class="join-sense"><input type="checkbox" data-meaning-join="${i}" ${i>0&&m.sense_group&&m.sense_group===e.meanings[i-1].sense_group?'checked':''} ${i===0?'disabled':''}>${L('与上一义合并','Join the previous sense')}</label></div>`).join('')}</div><datalist id="pos-options">${['n.','v.','vi.','vt.','adj.','adv.','prep.','conj.','pron.','num.','interj.','phr.'].map(p=>`<option value="${p}">`).join('')}</datalist><label for="edit-note">补充说明（可编辑）</label><textarea id="edit-note" data-edit="note">${esc(e.note||'')}</textarea><label for="edit-story">单词故事与提示</label><div class="markdown-tools"><button data-insert="highlight">高亮</button><button data-insert="bold">粗体</button><button data-insert="tip">@ 提示</button><button data-insert="root">/ 构词</button></div><textarea id="edit-story" data-edit="markdown" placeholder="- 一个小故事\n- @记忆提示\n- /构词联想\n==高亮== · **粗体**">${esc(e.markdown)}</textarea><p class="draft-hint" id="draft-status">${L('修改会自动保存；也可点“保存并返回”。','Changes save automatically. Use Save & return when finished.')}</p><div class="editor-actions"><button class="primary" data-action="save-edit">保存并返回</button><button class="secondary" data-action="discard-edit">撤销本机修改</button></div><div class="section-title"><h2>${L('短语与搭配','Phrases & collocations')}</h2><button class="secondary" data-action="add-phrase">＋ 添加搭配</button></div><div class="phrase-edit-rows">${e.collocations.map((p,i)=>`<div class="phrase-edit-row"><input data-phrase-en="${i}" aria-label="英文短语" placeholder="英文短语" value="${esc(p[0])}"><input data-phrase-zh="${i}" aria-label="中文翻译" placeholder="中文翻译" value="${esc(p[1])}"><button class="delete-row" data-action="remove-phrase" data-index="${i}" aria-label="删除">×</button></div>`).join('')}</div></div><div class="editor-preview" id="editor-preview"></div></div></section>`}
-function saveEdit(force=false,stay=false){if(!EDITOR||!editor)return;const latest=readState(),currentBase=JSON.stringify(latest.edits[editor.id]||null);if(!force&&currentBase!==editor.base){if(stay){document.getElementById('draft-status').textContent=L('另一个窗口已修改这个词，请核对后保存。','This word changed in another window. Review before saving.');return;}showModal('另一个窗口已修改这个词','你的草稿还在。可以取消后核对，也可以使用当前内容覆盖本机这个词的修改。','使用当前内容',()=>saveEdit(true));return}const w=editToWord(editor);if(!w.meanings.length||w.collocations.some(p=>!p[1])){toast('请保留至少一条词义，并为每条搭配填写中文翻译。');return}const base={...words.get(w.id),...(S.words[w.id]||{})},patch={};if(w.ipa_us!==base.ipa_us)patch.ipa_us=w.ipa_us;if(JSON.stringify(w.meanings.map(m=>[m.zh,m.pos,!!m.primary,m.sense_group||'']))!==JSON.stringify(base.meanings.map(m=>[m.zh,m.pos,!!m.primary,m.sense_group||''])))patch.meanings=w.meanings;if(JSON.stringify(w.collocations)!==JSON.stringify(base.collocations))patch.collocations=w.collocations;if(w.note!==(base.note||''))patch.note=w.note;if(w.markdown!==(base.markdown||''))patch.markdown=w.markdown;if(JSON.stringify(w.drawing||null)!==JSON.stringify(base.drawing||null))patch.drawing=w.drawing;if(latest.edits[w.id]?.tip)patch.tip=latest.edits[w.id].tip;if(Object.keys(patch).length)latest.edits[w.id]=patch;else delete latest.edits[w.id];saved=latest;put();localStorage.removeItem(DRAFT+w.id);queryCache={};if(stay){editor.base=JSON.stringify(readState().edits[w.id]||null);editor.savedDraft=JSON.stringify([editor.ipa,editor.meanings,editor.collocations,editor.markdown,editor.drawing||null]);draftEditor();return}toast('已保存到本机。');editor=null;finishEditor(w.id)}
+function saveEdit(force=false,stay=false){if(!EDITOR||!editor)return;const latest=readState(),currentBase=JSON.stringify(latest.edits[editor.id]||null);if(!force&&currentBase!==editor.base){if(stay){document.getElementById('draft-status').textContent=L('另一个窗口已修改这个词，请核对后保存。','This word changed in another window. Review before saving.');return;}showModal('另一个窗口已修改这个词','你的草稿还在。可以取消后核对，也可以使用当前内容覆盖本机这个词的修改。','使用当前内容',()=>saveEdit(true));return}const w=editToWord(editor);if(!w.meanings.length||w.collocations.some(p=>!p[1])){toast('请保留至少一条词义，并为每条搭配填写中文翻译。');return}const base={...words.get(w.id),...(S.words[w.id]||{})},patch={};if(w.ipa_us!==base.ipa_us)patch.ipa_us=w.ipa_us;if(JSON.stringify(w.meanings.map(m=>[m.zh,m.pos,!!m.primary,m.sense_group||'']))!==JSON.stringify(base.meanings.map(m=>[m.zh,m.pos,!!m.primary,m.sense_group||''])))patch.meanings=w.meanings;if(JSON.stringify(w.collocations)!==JSON.stringify(base.collocations))patch.collocations=w.collocations;if(w.note!==(base.note||''))patch.note=w.note;if(w.markdown!==(base.markdown||''))patch.markdown=w.markdown;if(JSON.stringify(w.drawing||null)!==JSON.stringify(base.drawing||null))patch.drawing=w.drawing;if(latest.edits[w.id]?.tip)patch.tip=latest.edits[w.id].tip;if(latest.edits[w.id]?.word)patch.word=latest.edits[w.id].word;if(Object.keys(patch).length)latest.edits[w.id]=patch;else delete latest.edits[w.id];saved=latest;put();localStorage.removeItem(DRAFT+w.id);queryCache={};if(stay){editor.base=JSON.stringify(readState().edits[w.id]||null);editor.savedDraft=JSON.stringify([editor.ipa,editor.meanings,editor.collocations,editor.markdown,editor.drawing||null]);draftEditor();return}toast('已保存到本机。');editor=null;finishEditor(w.id)}
 function finishEditor(id){const previous=stack[stack.length-2];if(previous?.name==='word'&&previous.id===id)back();else go({name:'word',id},true)}
 function backupPage(){if(!EDITOR)return publicBackupPage();return `<section class="subpage"><div class="heading"><h1>把故事留好。</h1><p>电脑、网页版和安卓之间，可以用备份文件转移个人修改。</p></div><div class="panel backup-actions"><button class="primary" data-action="export">导出全部个人数据</button><button class="secondary" data-action="export-stories">导出故事 Markdown</button><button class="secondary" data-action="import">导入备份 / 旧版备份</button><button class="text-button" data-route="${routeAttr({name:'wordlist',filter:'edits'})}">浏览我修改过的词 →</button><input class="hidden" id="import-file" type="file" accept=".json,application/json"></div><p class="footer-note">可以一边打开页面查看，一边让我修改公开词库或故事；发布后刷新即可。你的个人修改优先显示。若也修改了同一词，可撤销本机修改以查看网站版本。<br>个人编辑不会自动上传到公共网站。需要合入新版时，将备份或故事文件发给我即可。此版不提供跨设备个人数据自动云同步。</p></section>`}
 function aboutPage(){return aboutPageV3();return `<section class="subpage"><div class="heading"><h1>吹衣单词 0.5.8</h1><p>完整词库 · 同屏记忆</p></div><div class="panel"><p>原库 7,298 词，经补充、合并和剔除后，共 ${C.entries.length.toLocaleString()} 词、23,976 条独立短语与搭配，全部带中文翻译。没有难度分级。</p><p class="footer-note">词义、搭配与词族沿用已整理数据，完成结构检查和重点核对，仍可继续修订；不等同逐条权威词典审校。</p><p class="footer-note">插画延续复古绘本风扁平画法。六张小图合计约 50 KB，每张 320×213；只为已有故事的六词配图。动效是轻微位移缩放，可在设置关闭。</p><p class="footer-note">来源：<a href="https://github.com/designfuchen/word-atlas" data-external>Word Atlas contributors（词光）</a>，<a href="https://creativecommons.org/licenses/by/4.0/" data-external>CC BY 4.0</a>。本版改动：取消分级及例句、补词、拆分义项、词族归组、带译搭配、重点音标修订，并加入个人记忆内容。</p><p class="footer-note">公开词库与故事可通过版本更新发布；自己的编辑、历史、皮肤和统计保存在当前设备。更新安卓客户端可覆盖安装。</p></div></section>`}
-function render(restore=false){applyTheme();if(current().name==='editor'&&!EDITOR)stack=[{name:'home',scroll:0}];const pages={home:homePage,word:wordPage,settings:settingsPage,wordlist:listPage,search:searchPage,families:familiesPage,family:familyPage,history:historyPage,stats:statsPage,themes:themesPage,...(EDITOR?{editor:editorPage,phrases:phrasesPage}:{}),backup:backupPage,about:aboutPage,stories:storiesPage,story:storyPage,day:dayPage,completed:completedPage,recent:recentPage,books:booksPage};app.innerHTML=header()+`<main class="main">${updateAvailable?'<div class="update-banner"><span>网站有新内容；草稿已保存在本机。</span><button data-action="reload">刷新查看</button></div>':''}${(pages[current().name]||homePage)()}</main>`+nav();if(current().name==='editor'&&EDITOR)previewEditor();window.CY_EDITOR_KIT?.mount();nativeBack();if(restore)requestAnimationFrame(()=>scrollTo(0,current().scroll||0));lastClock=Date.now()}
+function render(restore=false){applyTheme();if(current().name==='editor'&&!EDITOR)stack=[{name:'home',scroll:0}];const pages={phrase:phraseDetailPage,home:homePage,word:wordPage,settings:settingsPage,wordlist:listPage,search:searchPage,families:familiesPage,family:familyPage,history:historyPage,stats:statsPage,themes:themesPage,...(EDITOR?{editor:editorPage,phrases:phrasesPage}:{}),backup:backupPage,about:aboutPage,stories:storiesPage,story:storyPage,day:dayPage,completed:completedPage,recent:recentPage,books:booksPage};app.innerHTML=header()+`<main class="main">${updateAvailable?'<div class="update-banner"><span>网站有新内容；草稿已保存在本机。</span><button data-action="reload">刷新查看</button></div>':''}${(pages[current().name]||homePage)()}</main>`+nav();if(current().name==='editor'&&EDITOR)previewEditor();window.CY_EDITOR_KIT?.mount();nativeBack();if(restore)requestAnimationFrame(()=>scrollTo(0,current().scroll||0));lastClock=Date.now()}
 function flushTime(){const now=Date.now(),seconds=Math.floor((now-lastClock)/1000);lastClock=now;if(seconds>0&&!document.hidden&&(document.hasFocus()||window.AndroidBridge)&&current().name==='word'&&!familyOnly(current().id)){saved=readState();daily().seconds+=Math.min(seconds,15);put()}}
 function speak(id){return speakOffline048(id)}
 function download(text,name,mime='application/json'){if(window.AndroidBridge?.exportData){window.AndroidBridge.exportData(text,name,mime);return}const url=URL.createObjectURL(new Blob([text],{type:mime})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
@@ -1214,9 +1224,9 @@ function booksPage(){return `<section class="subpage"><h1>词书导入导出</h1
 exportData=function(){flushTime();const v=readState();download(JSON.stringify({format:'chuiyi-learning-backup',version:1,book:meta().name||BOOK_NAME,data:{history:v.history,views:v.views,mastered:v.mastered,daily:v.daily,lastWord:v.lastWord,completed:v.completed,learning:v.learning}},null,2),'吹衣单词_学习记录_'+dayKey()+'.json')}
 const legacyImport048=importData;
 importData=function(text){let v;try{v=JSON.parse(text)}catch(e){toast('文件格式有误');return false}if(v.format==='chuiyi-wordbook')return importBook048(v);if(!['chuiyi-learning-backup','chuiyi-words-backup'].includes(v.format)||!v.data||typeof v.data!=='object'){toast('不是有效的学习记录');return false}const data=normalize(v.data);showModal('恢复学习记录？','将替换当前学习统计、历史和完成状态。','恢复',()=>{const own=readState();for(const k of ['history','views','mastered','daily','lastWord','completed','learning'])own[k]=data[k];saved=own;put();home();toast('学习记录已恢复')});return true}
-function exportBook048(){window.CYBook?.savePending();if(editor)saveEdit(false,true);const v=readState(),entries=C.entries.map(w=>({...w,...S.words[w.id],...(EDITOR?v.edits[w.id]:{}),family_only:familyOnly(w.id)}));download(JSON.stringify({format:'chuiyi-wordbook',version:1,name:meta().name||BOOK_NAME,catalog:{...C,entries},shared:{...S,words:{},bookMeta:structuredClone(meta())},createdAt:new Date().toISOString()},null,2),(meta().name||BOOK_NAME)+'.json')}
+function exportBook048(){window.CYBook?.savePending();if(editor)saveEdit(false,true);const v=readState(),entries=C.entries.map(w=>({...w,...S.words[w.id],...(EDITOR?v.edits[w.id]:{}),family_only:familyOnly(w.id)}));download(JSON.stringify({format:'chuiyi-wordbook',version:1,name:meta().name||BOOK_NAME,catalog:{...C,entries,extraPhrases:mdExtra()},shared:{...S,words:{},bookMeta:structuredClone(meta())},createdAt:new Date().toISOString()},null,2),(meta().name||BOOK_NAME)+'.json')}
 function validateBook048(v){if(v.format!=='chuiyi-wordbook'||v.version!==1||!Array.isArray(v.catalog?.entries)||!Array.isArray(v.catalog?.families)||!v.shared||typeof v.shared!=='object')throw Error('词书格式有误');const ids=new Set(),fs=new Set();if(v.catalog.entries.length>30000)throw Error('词书条目数量有误');for(const w of v.catalog.entries){if(typeof w.id!=='string'||ids.has(w.id)||typeof w.word!=='string'||!Array.isArray(w.meanings)||!w.meanings.length||w.meanings.some(m=>typeof m.zh!=='string')||!Array.isArray(w.collocations))throw Error('单词格式有误');ids.add(w.id)}for(const f of v.catalog.families){if(typeof f.id!=='string'||fs.has(f.id)||typeof f.root!=='string'||!Array.isArray(f.words)||!Array.isArray(f.entry_ids)||f.entry_ids.some(id=>!ids.has(id)))throw Error('词族格式有误');fs.add(f.id)}if(v.catalog.entries.some(w=>!fs.has(w.family_id)))throw Error('词族关联缺失');const m=v.shared.bookMeta;if(m&&(!Array.isArray(m.stories)||m.stories.some(s=>!/^story-/.test(s.id)||typeof s.title!=='string'||!Array.isArray(s.entry_ids)||s.entry_ids.some(id=>!ids.has(id)))))throw Error('故事关联有误');return v}
-function importBook048(v){try{validateBook048(v);JSON.stringify(v)}catch(e){toast(e.message);return false}showModal('导入这本词书？',String(v.name||'词书')+' · '+v.catalog.entries.length+'个单词；同ID的学习记录保留。','导入',()=>{try{localStorage.setItem('cy-imported-book',JSON.stringify(v));localStorage.removeItem('cy-book-deleted');const own=readState();own.bookMeta=null;own.edits={};if(EDITOR)own.deletedWords={};saved=own;put();location.hash='';location.reload()}catch(e){toast('保存失败，请检查存储空间')}});return true}
+function importBook048(v){try{validateBook048(v);JSON.stringify(v)}catch(e){toast(e.message);return false}showModal('导入这本词书？',String(v.name||'词书')+' · '+v.catalog.entries.length+'个单词；同ID的学习记录保留。','导入',()=>{try{localStorage.setItem('cy-imported-book',JSON.stringify(v));localStorage.removeItem('cy-book-deleted');const own=readState();own.bookMeta=null;own.edits={};delete own.mdRevision;delete own.mdExtra;if(EDITOR)own.deletedWords={};saved=own;put();location.hash='';location.reload()}catch(e){toast('保存失败，请检查存储空间')}});return true}
 function saveMeta048(){put();const el=document.querySelector('[data-meta-status]');if(el)el.textContent='已保存'}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-done],[data-ready-filter],[data-book-action]');if(!b||b.disabled)return;if(b.dataset.done){const k=b.dataset.done,id=b.dataset.id;saved=readState();saved.completed||={words:{},families:{},stories:{}};saved.completed[k][id]?delete saved.completed[k][id]:saved.completed[k][id]=true;put();render(true);return}if(b.dataset.readyFilter){current().ready=b.dataset.readyFilter;current().page=0;render(true);return}const act=b.dataset.bookAction;if(act==='export-book'){exportBook048();return}if(act==='import-book'){document.getElementById('book-file')?.click();return}if(!EDITOR)return;const m=editableMeta(),s=m.stories.find(s=>s.id===b.dataset.id);if(act==='new-story'){showModal('新建笔记','填写笔记名称','创建',()=>{const title=document.getElementById('new-story-title')?.value.trim();if(!title){toast('请填写名称');return}const s={id:'story-'+crypto.randomUUID(),title,text:'',entry_ids:[]};m.stories.push(s);saveMeta048();go({name:'story',id:s.id})});const input=document.createElement('input');input.id='new-story-title';input.placeholder='笔记名称';input.maxLength=100;document.querySelector('.modal-card p').after(input);const create=modal;modal=()=>{const title=input.value.trim();if(!title){toast('请填写名称');return}const s={id:'story-'+crypto.randomUUID(),title,text:'',entry_ids:[]};m.stories.push(s);saveMeta048();go({name:'story',id:s.id})};input.focus();return}if(!s)return;const id=b.dataset.wordId||current().word;if(act==='add-current'||act==='add-member'){if(words.has(id)&&!s.entry_ids.includes(id))s.entry_ids.push(id);saveMeta048();go({name:'story',id:s.id});return}if(act==='delete-story'){showModal('删除笔记？','单词内容和词族笔记会保留。','删除',()=>{m.stories=m.stories.filter(x=>x.id!==s.id);saveMeta048();go({name:'stories'})});return}if(act==='remove-member')s.entry_ids=s.entry_ids.filter(x=>x!==id);if(act==='up'||act==='down'){const i=s.entry_ids.indexOf(id),j=i+(act==='up'?-1:1);if(i>=0&&j>=0&&j<s.entry_ids.length)[s.entry_ids[i],s.entry_ids[j]]=[s.entry_ids[j],s.entry_ids[i]]}saveMeta048();render(true)});
 function metaInput048(t){if(!EDITOR||!t.dataset.meta)return;const m=editableMeta(),k=t.dataset.meta,id=t.dataset.id;if(k.startsWith('family-')){m.families[id]||={};m.families[id][{'family-story':'story','family-difficulty':'difficulty','family-ready':'ready'}[k]]=k==='family-ready'?t.checked:k==='family-difficulty'?Number(t.value):t.value}else{const s=m.stories.find(s=>s.id===id);if(s)s[k==='story-title'?'title':'text']=t.value}saveMeta048()}
@@ -1224,6 +1234,260 @@ document.addEventListener('input',e=>{const t=e.target;metaInput048(t);if(t.id==
 document.addEventListener('change',async e=>{const t=e.target;if(t.dataset.learning){saved.learning||={mode:'words',difficulty:'all',order:'difficulty'};saved.learning[t.dataset.learning]=t.value;put();current().page=0;render(true)}if(t.dataset.meta)metaInput048(t);if(t.hasAttribute('data-stat-date')&&t.value)go({name:'day',day:t.value});if(t.id==='book-file'&&t.files[0]){if(t.files[0].size>50*1024*1024){toast('词书超过50MB');return}try{importBook048(JSON.parse(await t.files[0].text()))}catch(e){toast('词书无法读取')}t.value=''}});
 window.ChuiyiWords.importData=importData;window.ChuiyiWords.exportData=exportData;
 window.CYBook={exportBook:exportBook048,validate:validateBook048,studyWords,meta,level};
+
+/* Obsidian import and export use the same state as the word editor. */
+const mdTool=window.CY_MD_BOOK, mdLayout=localStorage.getItem('cy-imported-book')?null:mdRelease?.layout;
+let mdPending=null,mdMessage='',mdBusy=false;
+const mdExtra=()=>EDITOR&&saved.mdExtra?saved.mdExtra:C.extraPhrases||[];
+function mdCurrent(state=readState()){
+ return id=>{
+  const word={...words.get(id),...S.words[id],...(EDITOR?state.edits[id]:{})};
+  return {...word,markdown:mergeMemory058(word.markdown,word.note)};
+ };
+}
+async function mdDb(mode,key,value){
+ const db=await new Promise((resolve,reject)=>{
+  if(!window.indexedDB)return reject(Error('浏览器不支持 IndexedDB'));
+  const request=indexedDB.open('cy-words-master-md-v1',1);
+  request.onupgradeneeded=()=>request.result.createObjectStore('files');
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+ try{
+  return await new Promise((resolve,reject)=>{
+   const tx=db.transaction('files',mode),store=tx.objectStore('files');
+   const request=mode==='readonly'?store.get(key):store.put(value,key);
+   tx.oncomplete=()=>resolve(request.result);
+   tx.onabort=()=>reject(tx.error||Error('词库事务已取消'));
+  });
+ }finally{db.close()}
+}
+async function mdGetSource(state){
+ if(EDITOR&&state.mdRevision){
+  const record=await mdDb('readonly',state.mdRevision);
+  if(record?.source)return record.source;
+ }
+ if(EDITOR){
+  const old=await mdDb('readonly','source').catch(()=>null);
+  if(old)return old;
+ }
+ if(window.CY_MD_SOURCE)return window.CY_MD_SOURCE;
+ const r=await fetch('/words/wordbook.md',{cache:'no-store'});
+ if(!r.ok)throw Error('找不到完整 Markdown 词库');
+ return r.text();
+}
+function mdReview(){
+ if(!mdPending)return mdMessage?'<p role="status">'+esc(mdMessage)+'</p>':'';
+ const {filename,check,changes,extra,extraRemoved,proposed}=mdPending;
+ let out='<section class="panel md-import-review"><h3>'+esc(filename)+'</h3><p>'+check.sourceCount+' 词 · '+check.groups+' 个分组</p>';
+ if(!check.ok){
+  out+='<pre>'+esc(check.errors.slice(0,20).join('\n'))+'</pre>';
+  if(proposed.size)out+='<p>以下拼写可以关联回原词条。请确认每一项。</p>'+[...proposed].map(([name,rows])=>'<label>'+esc(name)+' <select data-md-rename="'+esc(name)+'"><option value="">选择原拼写</option>'+rows.map(w=>'<option value="'+esc(w.id)+'">'+esc(w.word)+'</option>').join('')+'</select></label>').join(' ')+' <button data-md-action="map" class="secondary">确认拼写映射</button>';
+ }else{
+  const count=key=>changes.filter(x=>Object.hasOwn(x.patch,key)).length;
+  const removed=changes.reduce((n,x)=>n+x.removed.length,extraRemoved.length);
+  out+='<p>笔记 '+count('markdown')+' · 音标 '+count('ipa_us')+' · 释义 '+count('meanings')+' · 拼写 '+count('word')+' · 短语变更涉及 '+count('collocations')+' 个词'+(extra?'，含独立表达修改':'')+'</p>';
+  out+='<div class="md-import-options"><label><input type="checkbox" id="md-stage-notes" checked>更新记忆笔记（空白保留当前笔记）</label>';
+  out+='<label><input type="checkbox" id="md-stage-ipa">应用音标差异</label><label><input type="checkbox" id="md-stage-meanings">应用释义差异</label>';
+  if(removed)out+='<label><input type="checkbox" id="md-stage-remove">确认替换或删除 '+removed+' 条原短语收录</label>';
+  out+='</div><div class="backup-actions"><button class="primary" data-md-action="apply">备份并导入</button><button class="secondary" data-md-action="clear">取消</button></div>';
+  out+='<details><summary>查看差异</summary>';
+  for(const c of changes){
+   const p=c.patch;
+   out+='<details class="md-diff-word"><summary>'+esc(c.word)+'</summary>';
+   if(Object.hasOwn(p,'markdown'))out+='<p>笔记</p><pre>'+esc(c.oldMarkdown)+'\n→\n'+esc(p.markdown)+'</pre>';
+   if(p.ipa_us)out+='<p>音标 '+esc(c.oldIpa)+' → '+esc(p.ipa_us)+'</p>';
+   if(p.meanings)out+='<p>释义 '+esc(c.oldMeaningRaw)+' → '+esc(c.newMeaningRaw)+'</p>';
+   if(p.collocations)out+='<p>原短语 → 导入短语</p><pre>'+esc(mdTool.formatPhrases(c.oldPhrases).join('\n')+'\n→\n'+mdTool.formatPhrases(p.collocations).join('\n'))+'</pre>';
+   out+='</details>';
+  }
+  if(extra)out+='<details><summary>独立短语和搭配</summary><pre>'+esc(mdTool.formatPhrases(mdExtra()).join('\n')+'\n→\n'+mdTool.formatPhrases(extra).join('\n'))+'</pre></details>';
+  out+='</details>';
+ }
+ if(mdMessage)out+='<p role="status">'+esc(mdMessage)+'</p>';
+ return out+'</section>';
+}
+const mdOldBooksPage=booksPage;
+booksPage=function(){
+ if(!mdTool||!mdLayout||!C.entries.length)return mdOldBooksPage();
+ let panel='<section class="panel md-management"><h2>Obsidian 单文件 Markdown</h2><div class="backup-actions"><button class="secondary" data-md-action="export">导出完整 Markdown</button>';
+ if(EDITOR)panel+='<button class="primary" data-md-action="choose">导入 Markdown 并检查</button><input id="md-import-file" type="file" accept=".md,.markdown,text/markdown,text/plain" class="hidden"><button class="secondary" data-md-action="publish">下载发布构建包</button><button class="secondary" data-md-action="rollback">恢复上次导入前状态</button>';
+ panel+='</div>'+mdReview()+'</section>';
+ return mdOldBooksPage().replace('</section>',panel+'</section>');
+};
+function mdStage(filename,raw,renames){
+ const state=readState(),current=mdCurrent(state);
+ const parsed=mdTool.splitBook(raw,mdLayout),check=mdTool.verifyBook(parsed,C,mdLayout,current,renames);
+ const complete=parsed.entries.some(w=>!w.legacyId)||parsed.extraPhrases!==null;
+ if(complete&&(parsed.extraPhrases===null||parsed.entries.some(w=>!w.collocations))){
+  check.ok=false;
+  check.errors.push('缺少短语区。请从完整导出文件编辑后再导入。');
+ }
+ const proposed=new Map(check.unknown.map(w=>[w.word,check.missing.filter(x=>mdLayout.words[x.id]===w.groupId).map(x=>current(x.id))]).filter(([,rows])=>rows.length));
+ const extra=complete&&JSON.stringify(parsed.extraPhrases)!==JSON.stringify(mdExtra())?parsed.extraPhrases:null;
+ const extraRemoved=extra?mdTool.removedPhrases(mdExtra(),extra):[];
+ const changes=check.ok?mdTool.compareBook(parsed,C,current):[];
+ mdPending={filename,raw,parsed,check,changes,extra,extraRemoved,proposed,baseline:JSON.stringify([state.edits,state.mdRevision,state.mdExtra])};
+ mdMessage='';
+}
+async function mdImportFile(file){
+ if(!file||mdBusy)return;
+ try{
+  if(file.size>12*1024*1024)throw Error('文件过大（上限 12 MB）');
+  mdStage(file.name,await file.text());
+ }catch(e){mdPending=null;mdMessage='导入解析失败：'+e.message}
+ render(true);
+}
+function mdApply(){
+ const p=mdPending;
+ if(!p?.check.ok||mdBusy)return;
+ const checked=id=>document.getElementById(id)?.checked;
+ const notes=checked('md-stage-notes'),ipa=checked('md-stage-ipa'),meanings=checked('md-stage-meanings');
+ if((p.extraRemoved.length||p.changes.some(x=>x.removed.length))&&!checked('md-stage-remove')){
+  mdMessage='请先核对并确认短语差异。';render(true);return;
+ }
+ showModal('确认导入到 test？','导入前会保存一份完整的编辑状态供回滚。','确认备份并导入',()=>mdRun(async()=>{
+  const before=readState();
+  if(JSON.stringify([before.edits,before.mdRevision,before.mdExtra])!==p.baseline)throw Error('词库在审核期间已修改，请重新导入并核对');
+  const revision=crypto.randomUUID();
+  await mdDb('readwrite',revision,{source:p.raw,before});
+  const latest=readState();
+  if(JSON.stringify([latest.edits,latest.mdRevision,latest.mdExtra])!==p.baseline)throw Error('词库已在另一个窗口修改');
+  for(const {id,patch} of p.changes){
+   const next={...latest.edits[id]};
+   if(patch.word)next.word=patch.word;
+   if(patch.collocations)next.collocations=patch.collocations;
+   if(notes&&Object.hasOwn(patch,'markdown'))Object.assign(next,{markdown:patch.markdown,note:''});
+   if(ipa&&patch.ipa_us)next.ipa_us=patch.ipa_us;
+   if(meanings&&patch.meanings)next.meanings=patch.meanings;
+   latest.edits[id]=next;
+  }
+  if(p.extra)latest.mdExtra=p.extra;
+  latest.mdRevision=revision;
+  localStorage.setItem(KEY,JSON.stringify(latest));
+  saved=latest;queryCache={};
+  if(window.CY_CONFIG?.localServer)queueFileSave();
+  mdPending=null;
+  mdMessage='导入成功，可恢复至导入前状态。';
+ }));
+}
+async function mdRun(action){
+ if(mdBusy)return;
+ mdBusy=true;
+ try{await action()}catch(e){mdMessage=e.message}
+ finally{mdBusy=false;render(true)}
+}
+async function mdOutput(state){
+ const current=mdCurrent(state),text=await mdGetSource(state),parsed=mdTool.splitBook(text,mdLayout);
+ const names=new Map(C.entries.map(w=>[w.word,w.id]));
+ for(const entry of C.entries)names.set(current(entry.id).word,entry.id);
+ const check=mdTool.verifyBook(parsed,C,mdLayout,current,names);
+ if(!check.ok)throw Error('源文件校验失败：'+check.errors[0]);
+ const markdown=mdTool.composeBook(parsed,current,mdExtra());
+ const result=mdTool.verifyBook(mdTool.splitBook(markdown,mdLayout),C,mdLayout,current);
+ if(!result.ok)throw Error('导出回读校验失败：'+result.errors[0]);
+ return markdown;
+}
+function mdExport(publish=false){
+ return mdRun(async()=>{
+  const state=readState(),markdown=await mdOutput(state);
+  if(publish){
+   const current=mdCurrent(state);
+   const renames=Object.fromEntries(C.entries.filter(w=>current(w.id).word!==w.word).map(w=>[current(w.id).word,w.id]));
+   download(JSON.stringify({format:'chuiyi-markdown-release',version:1,markdown,renames}),'吹衣单词_发布构建包_'+dayKey()+'.json');
+   mdMessage='发布构建包已下载。';
+  }else{
+   download(markdown,'吹衣单词_词库.md','text/markdown;charset=utf-8');
+   mdMessage='完整词库已导出。';
+  }
+ });
+}
+function mdRollback(){
+ const revision=readState().mdRevision;
+ if(!revision){mdMessage='当前没有导入前备份。';render(true);return}
+ showModal('恢复上次导入前状态？','将恢复导入前的完整编辑状态。','恢复',()=>mdRun(async()=>{
+  const record=await mdDb('readonly',revision),state=readState();
+  if(!record?.before||state.mdRevision!==revision)throw Error('回滚记录已变更或无法读取');
+  const previous=normalize(record.before);
+  localStorage.setItem(KEY,JSON.stringify(previous));
+  saved=previous;queryCache={};
+  if(window.CY_CONFIG?.localServer)queueFileSave();
+  mdPending=null;mdMessage='已恢复至导入前状态。';
+ }));
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-md-action]');
+ if(!b)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const action=b.dataset.mdAction;
+ if(action==='export'){mdExport();return}
+ if(!EDITOR||mdBusy)return;
+ if(action==='choose')document.getElementById('md-import-file')?.click();
+ if(action==='apply')mdApply();
+ if(action==='rollback')mdRollback();
+ if(action==='publish')mdExport(true);
+ if(action==='clear'){mdPending=null;mdMessage='已取消导入。';render(true)}
+ if(action==='map'){
+  const fields=[...document.querySelectorAll('[data-md-rename]')];
+  if(fields.some(x=>!x.value)){mdMessage='请选择每个新拼写对应的原词条。';render(true);return}
+  mdStage(mdPending.filename,mdPending.raw,new Map(fields.map(x=>[x.dataset.mdRename,x.value])));
+  render(true);
+ }
+},true);
+document.addEventListener('change',e=>{
+ if(!EDITOR||e.target.id!=='md-import-file'||!e.target.files?.[0])return;
+ const file=e.target.files[0];
+ e.target.value='';
+ mdImportFile(file);
+});
+const mdCss=document.createElement('style');
+mdCss.textContent='.md-management{margin-top:20px}.md-import-review{margin-top:14px}.md-import-options{display:grid;gap:12px;margin:14px 0}.md-import-options label{display:flex;gap:9px;align-items:flex-start}.md-import-review pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto}.md-diff-word{padding:8px 0;border-bottom:1px solid var(--line)}.phrase-link{color:inherit;text-decoration:underline;text-underline-offset:.18em;background:none;border:0;padding:0;font:inherit;text-align:left;cursor:pointer}';
+document.head.append(mdCss);
+
+function phraseButton(text,markup=esc(text)){
+ return '<button type="button" class="phrase-link usage-en" data-route="'+routeAttr({name:'phrase',id:mdTool.phraseKey(text)})+'">'+markup+'</button>';
+}
+function currentPhraseIndex(){
+ return mdTool.phraseIndex(C.entries.map(w=>getWord(w.id)),mdExtra());
+}
+function phraseDetailPage(){
+ const rows=currentPhraseIndex().get(current().id)||[];
+ if(!rows.length)return '<section class="panel"><p>当前词库中没有这条短语。</p></section>';
+ const translations=[...new Set(rows.map(({row})=>row[1]))];
+ const usage=rows.map(({id,row})=>{
+  const word=id?getWord(id):null;
+  const contexts=word?String(word.markdown||'').split('\n').filter(line=>mdTool.phraseKey(line.replace(/\*\*|==/g,'')).includes(mdTool.phraseKey(row[0]))):[];
+  const label=word?'<button class="secondary" data-word="'+esc(id)+'">'+esc(word.word)+'</button>':'<span>独立表达</span>';
+  return '<li>'+label+'<p>'+esc(row[0])+' · '+esc(row[1])+'</p>'+contexts.map(line=>'<p>'+rich(line)+'</p>').join('')+'</li>';
+ }).join('');
+ return '<section class="subpage"><div class="heading"><h1>'+esc(rows[0].row[0])+'</h1></div><div class="panel"><h2>中文译法</h2><ul>'+translations.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul><h2>收录词条与语境</h2><ul>'+usage+'</ul></div></section>';
+}
+function editWordPhrases(id){
+ const word=getWord(id);
+ showModal('编辑短语和搭配','每行写一个英文短语，接空格和中文翻译。','保存',()=>{
+  try{
+   const rows=mdTool.readPhraseList(field.value);
+   const latest=readState();
+   latest.edits[id]={...latest.edits[id],collocations:rows};
+   localStorage.setItem(KEY,JSON.stringify(latest));
+   saved=latest;queryCache={};
+   if(window.CY_CONFIG?.localServer)queueFileSave();
+   render(true);
+  }catch(e){toast(e.message);return false}
+ });
+ const field=document.createElement('textarea');
+ field.id='md-edit-phrases';
+ field.className='story-source';
+ field.rows=8;
+ field.setAttribute('aria-label','短语和搭配');
+ field.value=mdTool.formatPhrases(word.collocations).join('\n');
+ document.querySelector('#modal .modal-card p').after(field);
+ field.focus();
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-md-edit-phrases]');
+ if(b&&EDITOR&&mdTool)editWordPhrases(b.dataset.mdEditPhrases);
+});
 
 let storySource048=false;
 function markdownRich048(text){return String(text||'').split('\n').map(l=>`<div>${rich(l)||'<br>'}</div>`).join('')}
@@ -1358,7 +1622,7 @@ storyPage=function(){return storyPage058().replace(/<h2>故事<\/h2>/g,'<h2>记�
 const saveUnified058=saveUnified055;saveUnified055=function(el){saveUnified058(el);if(el.dataset.storyField!=='text')return;const s=storyList().find(s=>s.id===el.dataset.id);if(!s)return;if(s.source==='word'){saved.edits[s.sourceId].note='';put()}else if(s.source==='family'){editableMeta().families[s.sourceId].hint='';saveMeta048()}else{editableMeta().stories.find(x=>x.id===s.id).hint='';saveMeta048()}};
 const metaInput058=metaInput048;metaInput048=function(el){metaInput058(el);if(el.dataset.meta==='family-story'){editableMeta().families[el.dataset.id].hint='';saveMeta048()}};
 doneButton=function(kind,id){if(kind==='words'&&familyOnly(id))return '';const done=!!saved.completed?.[kind]?.[id];return `<button class="secondary" data-done="${kind}" data-id="${esc(id)}" aria-pressed="${done}" title="记录本次已学习，可再次点击取消；不会自动设为熟词">${done?'✓ 已学完':'学完了'}</button><small class="completion-help">记入学习统计，再点可取消</small>`};
-const phrases058=collocationsHtml;collocationsHtml=w=>phrases058(w).replace('class="local-phrases"','class="local-phrases"'+(localStorage.getItem('cy-words-show-phrases')==='0'?' hidden':''));
+const phrases058=collocationsHtml;collocationsHtml=w=>phrases058(w).replace('class="local-phrases"','class="local-phrases"'+(localStorage.getItem('cy-words-show-phrases')==='0'?' hidden':'')).replace('</details>',(EDITOR&&mdTool?`<button class="secondary" data-md-edit-phrases="${esc(w.id)}">编辑短语和搭配</button>`:'')+'</details>');
 let memorySelection058;
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('[data-memory-command]'))return;const s=window.getSelection?.();if(s?.rangeCount)memorySelection058=s.getRangeAt(0).cloneRange();e.preventDefault()});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-memory-command]');if(!EDITOR||!b)return;e.preventDefault();const box=document.getElementById('direct-story');if(!box)return;const command=b.dataset.memoryCommand;if(command==='source'){const value=serializeMemory058(box),source=box.tagName!=='TEXTAREA',next=document.createElement(source?'textarea':'div');next.id=box.id;next.dataset.id=box.dataset.id;next.className=source?'story-source':'story-wysiwyg';if(source)next.value=value;else{next.contentEditable='true';next.setAttribute('role','textbox');next.setAttribute('aria-label','记忆笔记');next.innerHTML=memoryHtml058(value)}box.replaceWith(next);next.focus();return}if(box.tagName==='TEXTAREA'){const i=box.selectionStart,j=box.selectionEnd,t=box.value.slice(i,j);box.setRangeText(command==='bold'?'**'+t+'**':command==='highlight'?'=='+t+'==':'\n- '+t,i,j,'end')}else{box.focus();const s=window.getSelection();if(memorySelection058&&box.contains(memorySelection058.commonAncestorContainer)){s.removeAllRanges();s.addRange(memorySelection058)}if(command==='bold')document.execCommand('bold');else if(command==='list')document.execCommand('insertUnorderedList');else if(s.rangeCount&&!s.isCollapsed){const r=s.getRangeAt(0),m=document.createElement('mark');m.append(r.extractContents());r.insertNode(m)}}saveStory048()});
@@ -1400,7 +1664,7 @@ markdownRich048=memoryHtml058;
 .memory-markdown blockquote p,.story-wysiwyg blockquote p{margin:0}
 .memory-markdown ul,.story-wysiwyg ul{margin-top:2px}
 `;document.head.append(s)})();
-try{const r=JSON.parse(decodeURIComponent(location.hash.slice(1)));if((r.name==='word'||r.name==='editor'&&EDITOR)&&words.has(r.id)){stack=[{name:'home',scroll:0}];sync(true);if(r.name==='editor'){stack.push({name:'word',id:r.id,scroll:0});sync()}stack.push({...r,name:r.name==='editor'?'word':r.name,scroll:0});sync()}else if((['settings','wordlist','families','history','stats','themes','backup','about','search','stories','story','family','recent','books','completed','day'].includes(r.name)||EDITOR&&r.name==='phrases')){stack.push({...r,name:r.name==='editor'?'word':r.name,scroll:0});sync()}}catch(e){}sync(true);render();
+try{const r=JSON.parse(decodeURIComponent(location.hash.slice(1)));if((r.name==='word'||r.name==='editor'&&EDITOR)&&words.has(r.id)){stack=[{name:'home',scroll:0}];sync(true);if(r.name==='editor'){stack.push({name:'word',id:r.id,scroll:0});sync()}stack.push({...r,name:r.name==='editor'?'word':r.name,scroll:0});sync()}else if((['settings','wordlist','families','history','stats','themes','backup','about','search','stories','story','family','recent','books','completed','day','phrase'].includes(r.name)||EDITOR&&r.name==='phrases')){stack.push({...r,name:r.name==='editor'?'word':r.name,scroll:0});sync()}}catch(e){}sync(true);render();
 addEventListener('cy-theme',()=>{saved.settings.theme=CYTheme.get();applyTheme();const s=CY_SKINS.find(x=>x.id===CYTheme.get());if(s)document.querySelectorAll('.quick-skin-orb').forEach(e=>e.style.background='conic-gradient('+s.swatches.map((c,i)=>c+' '+(i*120)+'deg '+((i+1)*120)+'deg').join(',')+')')});
 addEventListener('cy-language',()=>{snapshot();render(true)});
 if(!EDITOR&&'serviceWorker'in navigator&&location.protocol==='https:'&&!window.AndroidBridge)navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
@@ -1416,9 +1680,12 @@ function copyWord(){copyText(words.get(current().id)?.word||'')}
 function copyEntry(){const w=getWord(current().id);copyText([w.word,w.ipa_us,...w.meanings.map(m=>m.pos+' '+m.zh),'',w.markdown||''].join('\n'))}
 async function copyText(text){if(window.AndroidBridge?.copyText){window.AndroidBridge.copyText(text);toast(L('已复制','Copied'));return}let ok=false;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);ok=true}}catch(e){}if(!ok){const el=document.createElement('textarea');el.value=text;el.style.cssText='position:fixed;left:-10000px;top:0';document.body.append(el);el.select();try{ok=document.execCommand('copy')}catch(e){}el.remove()}if(ok){toast(L('已复制','Copied'));return}showModal(L('复制内容','Copy text'),L('文字已全选，可直接按 Ctrl+C 或使用系统复制。','Text selected. Press Ctrl+C or use system Copy.'),L('关闭','Close'),()=>{});const field=document.createElement('textarea');field.readOnly=true;field.value=text;field.style.minHeight='180px';document.querySelector('.modal-card p').after(field);field.focus();field.select()}
 async function queueFileSave(){clearTimeout(fileSaveTimer);fileSaveTimer=setTimeout(()=>{fileSaveTimer=null;saveFile()},200)}
-async function saveFile(){if(fileSaving){fileQueued=true;return}fileSaving=true;try{const revision=localStorage.getItem('cy-editor-file-revision')||window.CY_LOCAL_REVISION,sent=readState();const r=await fetch(location.protocol==='https:'?'/test/api/personal':'/api/personal',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({expectedRevision:revision,data:sent})});if(r.status===409){toast(L('数据文件已由其他窗口修改，请刷新核对；当前草稿保留。','The data file changed elsewhere. Refresh to review; your draft is safe.'));fileQueued=false;return}if(!r.ok)throw Error();const v=await r.json();window.CY_LOCAL_REVISION=v.revision;localStorage.setItem('cy-editor-file-revision',v.revision);const el=document.getElementById('draft-status');if(el&&editor&&editor.savedDraft===JSON.stringify([editor.ipa,editor.meanings,editor.collocations,editor.markdown,editor.drawing||null])&&JSON.stringify(sent.edits[editor.id])===JSON.stringify(readState().edits[editor.id]))el.textContent=L('已保存到本机文件','Saved to local files')}catch(e){toast(L('文件保存失败，草稿仍保留在浏览器；请导出备份。','File save failed. Your browser draft is safe; export a backup.'))}finally{fileSaving=false;if(fileQueued){fileQueued=false;saveFile()}}}
-function getPhrases(){if(!allPhrases){const m=new Map();for(const w of C.entries)for(const p of w.collocations)m.set(p[0],p);for(const p of C.extraPhrases||[])m.set(p[0],p);allPhrases=[...m.values()].sort((a,b)=>a[0].localeCompare(b[0]))}return allPhrases}
-function phrasesPage(){if(!EDITOR)return '';const q=(current().query||'').toLowerCase(),p=current().page||0,items=(current().basic?C.extraPhrases:getPhrases()).filter(x=>x.join(' ').toLowerCase().includes(q));return `<section class="subpage"><div class="heading"><h1>短语与搭配</h1><p>${L('包含独立基础表达；英文在左，中文在右。','Includes standalone basic expressions. English on the left, Chinese on the right.')}</p></div>${searchBox(current().query||'','phrase-search')}<button class="secondary" data-action="toggle-basic">${L(current().basic?'全部短语':'仅基础短语',current().basic?'All phrases':'Basic expressions only')}</button><p class="muted">${items.length.toLocaleString()} ${L('条','items')}</p><div class="panel usage-list">${items.slice(p*80,p*80+80).map(x=>`<div class="bilingual-row"><span class="usage-en">${esc(x[0])}</span><span class="usage-zh">${esc(x[1])}</span></div>`).join('')}</div><div class="pager"><button class="secondary" data-page="${p-1}" ${p===0?'disabled':''}>上一页</button><small>${p+1} / ${Math.max(1,Math.ceil(items.length/80))}</small><button class="secondary" data-page="${p+1}" ${(p+1)*80>=items.length?'disabled':''}>下一页</button></div></section>`}
+async function saveFile(){if(fileSaving){fileQueued=true;return}fileSaving=true;try{const revision=localStorage.getItem('cy-editor-file-revision')||window.CY_LOCAL_REVISION,sent=readState();delete sent.mdRevision;const r=await fetch(location.protocol==='https:'?'/test/api/personal':'/api/personal',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({expectedRevision:revision,data:sent})});if(r.status===409){toast(L('数据文件已由其他窗口修改，请刷新核对；当前草稿保留。','The data file changed elsewhere. Refresh to review; your draft is safe.'));fileQueued=false;return}if(!r.ok)throw Error();const v=await r.json();window.CY_LOCAL_REVISION=v.revision;localStorage.setItem('cy-editor-file-revision',v.revision);const el=document.getElementById('draft-status');if(el&&editor&&editor.savedDraft===JSON.stringify([editor.ipa,editor.meanings,editor.collocations,editor.markdown,editor.drawing||null])&&JSON.stringify(sent.edits[editor.id])===JSON.stringify(readState().edits[editor.id]))el.textContent=L('已保存到本机文件','Saved to local files')}catch(e){toast(L('文件保存失败，草稿仍保留在浏览器；请导出备份。','File save failed. Your browser draft is safe; export a backup.'))}finally{fileSaving=false;if(fileQueued){fileQueued=false;saveFile()}}}
+function getPhrases(){
+ if(!mdTool)return C.entries.flatMap(w=>w.collocations).concat(C.extraPhrases||[]);
+ return [...currentPhraseIndex().values()].map(rows=>rows[0].row).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+function phrasesPage(){if(!EDITOR)return '';const q=(current().query||'').toLowerCase(),p=current().page||0,items=(current().basic?mdExtra():getPhrases()).filter(x=>x.join(' ').toLowerCase().includes(q));return `<section class="subpage"><div class="heading"><h1>短语与搭配</h1><p>${L('包含独立基础表达；英文在左，中文在右。','Includes standalone basic expressions. English on the left, Chinese on the right.')}</p></div>${searchBox(current().query||'','phrase-search')}<button class="secondary" data-action="toggle-basic">${L(current().basic?'全部短语':'仅基础短语',current().basic?'All phrases':'Basic expressions only')}</button><p class="muted">${items.length.toLocaleString()} ${L('条','items')}</p><div class="panel usage-list">${items.slice(p*80,p*80+80).map(x=>`<div class="bilingual-row">${mdTool?phraseButton(x[0]):`<span class="usage-en">${esc(x[0])}</span>`}<span class="usage-zh">${esc(x[1])}</span></div>`).join('')}</div><div class="pager"><button class="secondary" data-page="${p-1}" ${p===0?'disabled':''}>上一页</button><small>${p+1} / ${Math.max(1,Math.ceil(items.length/80))}</small><button class="secondary" data-page="${p+1}" ${(p+1)*80>=items.length?'disabled':''}>下一页</button></div></section>`}
 function publicBackupPage(){return `<section class="subpage"><div class="heading"><h1>${L('学习记录备份','Back up your learning')}</h1><p>${L('保存熟词、历史和设置；不上传个人数据。','Save known words, history and settings. Your data is not uploaded.')}</p></div><div class="panel backup-actions"><button class="primary" data-action="export">${L('导出学习记录','Export learning data')}</button><button class="secondary" data-action="import">${L('恢复学习记录','Restore learning data')}</button><input class="hidden" id="import-file" type="file" accept="application/json,.json"></div></section>`}
 function aboutPageV3(){return `<section class="subpage"><div class="heading"><h1>版本与更新</h1><p>吹衣单词 0.5.8</p></div><div class="panel"><p>记忆故事与提示由吹衣创作；短语与搭配由 GPT 生成。本词库大部分单词由 GPT 基于词光词库提取和整理。</p><p>插画由 GPT 和吹衣共同设计。</p><p class="footer-note">词库来源：Word Atlas contributors（词光），<a data-external href="https://github.com/designfuchen/word-atlas">Word Atlas</a>，<a data-external href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>；词库已进行整理与修改。</p></div><div class="list settings-list"><a href="https://chuiyi.pages.dev/words/" data-external><span><strong>打开网页版</strong><small>在浏览器中使用</small></span><span>↗</span></a></div></section>`}
 document.addEventListener('click',e=>{if(!e.target.closest('.word-menu-wrap'))closeMenu();const b=e.target.closest('[data-insert],[data-action="toggle-basic"]');if(!b)return;if(b.dataset.action==='toggle-basic'){current().basic=!current().basic;current().page=0;sync(true);render();return}if(!EDITOR||!editor)return;const ta=document.getElementById('edit-story');const i=ta.selectionStart,j=ta.selectionEnd,text=ta.value.slice(i,j);let insert={highlight:'=='+(text||L('高亮内容','highlight'))+'==',bold:'**'+(text||L('粗体内容','bold'))+'**',tip:'\n- @'+(text||L('记忆提示','Memory tip')),root:'\n- /'+(text||L('构词联想','Word structure'))}[b.dataset.insert];if(insert!==undefined){ta.setRangeText(insert,i,j,'end');editor.markdown=ta.value;draftEditor();previewEditor();scheduleAutoSave();ta.focus()}});

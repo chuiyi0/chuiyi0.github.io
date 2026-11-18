@@ -42,9 +42,14 @@ export default {async fetch(request,env) {
   if(!object)return new Response('Not found',{status:404});
   return new Response(request.method==='HEAD'?null:object.body,{headers:{'content-type':'application/vnd.android.package-archive','content-length':String(object.size),'cache-control':'public,max-age=31536000,immutable','content-disposition':'attachment; filename=chuiyi-words-0.5.8.apk'}});
  }
+ if(read&&p==='/words/wordbook.md')return env.ASSETS.fetch(request);
  if(read&&/^\/words\/(?:app\.js|i18n\.js|natural-voice\.js|voice-manifest\.js|sw\.js|audio\/voice-\d{3}\.js)$/.test(p)){
   const response=await env.ASSETS.fetch(request);
-  if(p.endsWith('/app.js')||p.endsWith('/natural-voice.js')||p.endsWith('/voice-manifest.js'))return changed(request.method==='HEAD'?null:response.body,response);
+  if(p.endsWith('/app.js')){
+   const [md,release,app]=await Promise.all([assetText(env,url,'/words/md-book.js'),assetText(env,url,'/words/wordbook-release.js'),assetText(env,url,'/words/app.js')]);
+   return changed(request.method==='HEAD'?null:md+'\n'+release+'\n'+app,response,'application/javascript; charset=utf-8');
+  }
+  if(p.endsWith('/natural-voice.js')||p.endsWith('/voice-manifest.js'))return changed(request.method==='HEAD'?null:response.body,response);
   return response;
  }
  const original=await proxy(request,url);
@@ -53,8 +58,8 @@ export default {async fetch(request,env) {
  // Authenticate using the existing editor before returning any protected asset.
  if(['/test/project/i18n.js','/test/i18n.js'].includes(p)&&!type.includes('html')&&!type.includes('json'))return changed(await assetText(env,url,'/words/i18n.js'),original,'application/javascript; charset=utf-8');
  if(['/test/project/app.js','/test/app.js'].includes(p)&&!type.includes('html')&&!type.includes('json')){
-  const [kit,app]=await Promise.all([assetText(env,url,'/shared/editor-kit.js'),assetText(env,url,'/words/app.js')]);
-  return changed(kit+'\n'+app,original,'application/javascript; charset=utf-8');
+  const [md,release,kit,app]=await Promise.all([assetText(env,url,'/words/md-book.js'),assetText(env,url,'/words/wordbook-release.js'),assetText(env,url,'/shared/editor-kit.js'),assetText(env,url,'/words/app.js')]);
+  return changed(kit+'\n'+md+'\n'+release+'\n'+app,original,'application/javascript; charset=utf-8');
  }
  if(['/test/project/voice-engine.js','/test/voice-engine.js'].includes(p)&&!type.includes('html')&&!type.includes('json')){
   const [manifest,engine]=await Promise.all([assetText(env,url,'/words/voice-manifest.js'),assetText(env,url,'/words/natural-voice.js')]);

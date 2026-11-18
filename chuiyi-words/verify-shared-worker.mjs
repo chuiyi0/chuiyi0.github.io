@@ -21,6 +21,7 @@ const voiceAlias=await (await worker.fetch(request('/test/voice-engine.js',true)
 const voice=await (await worker.fetch(request('/test/project/voice-engine.js',true),env)).text();
 assert(voice.includes('CY_VOICE_ASSET_BASE'));assert(voice.includes('CYVoiceAudio'));assert(!voice.includes('CYVoiceFactory'));
 const html=await (await worker.fetch(request('/test/project/',true),env)).text();
-assert(html.includes('app.js?v=shared058'));assert(html.includes('voice-engine.js?v=shared058'));
+assert.match(html,/app\.js\?v=md-[a-f0-9]{12}/);assert.match(html,/voice-engine\.js\?v=md-[a-f0-9]{12}/);
+assert(publicApp.includes('window.CY_MD_RELEASE='));
 assert(html.includes('cy-shared-version'));
 console.log('PASS shared public/editor code, protected assets, natural speech and cache-version routing');
