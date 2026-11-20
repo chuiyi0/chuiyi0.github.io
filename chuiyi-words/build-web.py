@@ -2,7 +2,7 @@ from pathlib import Path
 import argparse,json,hashlib,base64,re,subprocess
 R=Path(__file__).parent;A=R/'app';D=R/'dist';D.mkdir(exist_ok=True)
 parser=argparse.ArgumentParser()
-parser.add_argument('--wordbook',type=Path,default=A/'wordbook.md')
+parser.add_argument('--wordbook',type=Path,default=A/'wordbook')
 args=parser.parse_args()
 projection=D/'wordbook-release.js'
 source=D/'wordbook.md'
@@ -28,3 +28,4 @@ for editor,name in [(False,'吹衣单词_学习版预览.html'),(True,'吹衣单
   html=before+'<script>'+part.read_text(encoding='utf-8')+'</script></body>'+after
  (D/name).write_text(html,encoding='utf-8')
 print('Built public preview and local editor HTML')
+

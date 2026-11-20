@@ -1,0 +1,575 @@
+{
+  "entries": [
+    {
+      "id": "Wtopic001",
+      "word": "United States",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/juˌnaɪtɪd ˈsteɪts/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "美国",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic002",
+      "word": "South Korea",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌsaʊθ kəˈriːə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "韩国",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic003",
+      "word": "North Korea",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌnɔːrθ kəˈriːə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "朝鲜",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic004",
+      "word": "India",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈɪndiə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "印度",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic005",
+      "word": "Russia",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈrʌʃə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "俄罗斯",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic006",
+      "word": "Egypt",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈiːdʒɪpt/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "埃及",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic007",
+      "word": "Thailand",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈtaɪlænd/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "泰国",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic008",
+      "word": "Indonesia",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌɪndəˈniːʒə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "印度尼西亚",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic009",
+      "word": "Singapore",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈsɪŋəpɔːr/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "新加坡",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic010",
+      "word": "Vietnam",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌviːetˈnɑːm/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "越南",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic011",
+      "word": "Brazil",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/brəˈzɪl/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "巴西",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic012",
+      "word": "New Zealand",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌnuː ˈziːlənd/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "新西兰",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic013",
+      "word": "South Africa",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌsaʊθ ˈæfrɪkə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "南非",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic014",
+      "word": "the Netherlands",
+      "family_id": "Ftopic-1",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ðə ˈneðərləndz/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "荷兰",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic015",
+      "word": "Halloween",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌhæləˈwiːn/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "万圣节前夜",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic016",
+      "word": "New Year's Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌnuː jɪrz ˈdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "元旦",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic017",
+      "word": "New Year's Eve",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌnuː jɪrz ˈiːv/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "新年前夜",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic018",
+      "word": "Spring Festival",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈsprɪŋ ˌfestɪvəl/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "春节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic019",
+      "word": "Lantern Festival",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈlæntərn ˌfestɪvəl/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "元宵节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic020",
+      "word": "Dragon Boat Festival",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈdræɡən boʊt ˌfestɪvəl/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "端午节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic021",
+      "word": "Mid-Autumn Festival",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌmɪd ˈɔːtəm ˌfestɪvəl/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "中秋节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic022",
+      "word": "National Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈnæʃənəl ˌdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "国庆节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic023",
+      "word": "Valentine's Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈvæləntaɪnz ˌdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "情人节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic024",
+      "word": "April Fools' Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˌeɪprəl ˈfuːlz ˌdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "愚人节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic025",
+      "word": "Mother's Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈmʌðərz ˌdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "母亲节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic026",
+      "word": "Father's Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈfɑːðərz ˌdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "父亲节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic027",
+      "word": "Labor Day",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈleɪbər ˌdeɪ/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "劳动节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic028",
+      "word": "Diwali",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/dɪˈwɑːli/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "排灯节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    },
+    {
+      "id": "Wtopic029",
+      "word": "Hanukkah",
+      "family_id": "Ftopic-2",
+      "type": "主题组",
+      "topicSupplement": true,
+      "ipa_us": "/ˈhɑːnəkə/",
+      "meanings": [
+        {
+          "sense_group": "",
+          "pos": "n.",
+          "zh": "光明节",
+          "primary": true
+        }
+      ],
+      "collocations": []
+    }
+  ],
+  "families": [
+    {
+      "id": "Ftopic-1",
+      "root": "国家与地区",
+      "type": "主题组",
+      "entry_ids": [
+        "Wtopic001",
+        "Wtopic002",
+        "Wtopic003",
+        "Wtopic004",
+        "Wtopic005",
+        "Wtopic006",
+        "Wtopic007",
+        "Wtopic008",
+        "Wtopic009",
+        "Wtopic010",
+        "Wtopic011",
+        "Wtopic012",
+        "Wtopic013",
+        "Wtopic014"
+      ],
+      "words": [
+        "United States",
+        "South Korea",
+        "North Korea",
+        "India",
+        "Russia",
+        "Egypt",
+        "Thailand",
+        "Indonesia",
+        "Singapore",
+        "Vietnam",
+        "Brazil",
+        "New Zealand",
+        "South Africa",
+        "the Netherlands"
+      ]
+    },
+    {
+      "id": "Ftopic-2",
+      "root": "节日",
+      "type": "主题组",
+      "entry_ids": [
+        "Wtopic015",
+        "Wtopic016",
+        "Wtopic017",
+        "Wtopic018",
+        "Wtopic019",
+        "Wtopic020",
+        "Wtopic021",
+        "Wtopic022",
+        "Wtopic023",
+        "Wtopic024",
+        "Wtopic025",
+        "Wtopic026",
+        "Wtopic027",
+        "Wtopic028",
+        "Wtopic029"
+      ],
+      "words": [
+        "Halloween",
+        "New Year's Day",
+        "New Year's Eve",
+        "Spring Festival",
+        "Lantern Festival",
+        "Dragon Boat Festival",
+        "Mid-Autumn Festival",
+        "National Day",
+        "Valentine's Day",
+        "April Fools' Day",
+        "Mother's Day",
+        "Father's Day",
+        "Labor Day",
+        "Diwali",
+        "Hanukkah"
+      ]
+    }
+  ]
+}

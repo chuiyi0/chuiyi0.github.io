@@ -1,6 +1,6 @@
 """Build with Python 3, Node, JDK 17 and Android SDK 35 (no signing secrets in source)."""
 from pathlib import Path
-import argparse, os, shutil, subprocess, sys, zipfile
+import argparse, json, os, shutil, subprocess, sys, zipfile
 from apk_checks import verify_resources
 
 R=Path(__file__).resolve().parent
@@ -23,7 +23,15 @@ run(sys.executable,R/'build-web.py')
 assert B.resolve().is_relative_to(R.resolve()) and B.name=='build'
 if B.exists():shutil.rmtree(B)
 for p in [B/'generated',B/'classes',B/'dex',D]:p.mkdir(parents=True,exist_ok=True)
-shutil.copytree(R/'app',B/'assets'/'app',dirs_exist_ok=True)
+assets=B/'assets'/'app'
+shutil.copytree(R/'app',assets,dirs_exist_ok=True,
+                ignore=shutil.ignore_patterns('wordbook', 'wordbook.md', 'topic-supplement.json', 'wordbook-layout.json'))
+source=(D/'wordbook.md').read_text(encoding='utf-8')
+release=(D/'wordbook-release.js').read_text(encoding='utf-8')
+(assets/'wordbook-release.js').write_text(release+'\nwindow.CY_MD_SOURCE='+json.dumps(source,ensure_ascii=False)+';\n',encoding='utf-8')
+index=assets/'index.html'
+html=index.read_text(encoding='utf-8')
+index.write_text(html.replace('<script src="app.js', '<script src="md-book.js"></script><script src="wordbook-release.js"></script><script src="app.js'),encoding='utf-8')
 for name in ['catalog.json','shared.json','editor-kit.js']:(B/'assets'/'app'/name).unlink(missing_ok=True)
 run(bt/exe('aapt2'),'compile','--dir',R/'android'/'res','-o',B/'resources.zip')
 run(bt/exe('aapt2'),'link','-o',B/'base.apk','-I',android_jar,'--manifest',R/'android'/'AndroidManifest.xml','--java',B/'generated','-A',B/'assets','-0','arsc',B/'resources.zip')
@@ -48,3 +56,4 @@ if args.sign:
  run(bt/exe('zipalign'),'-c','4',apk)
  verify_resources(apk)
 print('Built',D)
+

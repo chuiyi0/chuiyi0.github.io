@@ -7,7 +7,7 @@ src.add_argument('--apk',type=Path,help='signed APK: publish a new Android relea
 src.add_argument('--local-release',type=Path,help='reuse local Android release metadata without network access')
 src.add_argument('--release-url',help='reuse the Android release currently live at this URL (no new APK)')
 parser.add_argument('--release-fallback',type=Path,default=R/'deployment/release-current.json',help='used when --release-url cannot be read')
-parser.add_argument('--wordbook',type=Path,default=R/'app/wordbook.md')
+parser.add_argument('--wordbook',type=Path,default=R/'app/wordbook')
 parser.add_argument('--out',type=Path,default=R/'dist/pages');args=parser.parse_args()
 manifest=ET.parse(R/'android/AndroidManifest.xml').getroot();ns='{http://schemas.android.com/apk/res/android}'
 version=manifest.attrib[ns+'versionName'];code=int(manifest.attrib[ns+'versionCode'])
@@ -33,3 +33,4 @@ asset_version=hashlib.sha256((D/'words/wordbook-release.js').read_bytes()+(D/'wo
 worker=worker.replace('v=shared058','v=md-'+asset_version)
 (D/'_worker.js').write_text(worker,encoding='utf-8');(D/'index.html').write_text('<!doctype html><title>吹衣单词</title>',encoding='utf-8')
 print('Prepared shared frontend',version,'at',D)
+

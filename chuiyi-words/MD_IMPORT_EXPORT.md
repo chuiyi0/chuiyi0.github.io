@@ -1,22 +1,29 @@
-# 吹衣单词的 Markdown 词库
+# 吹衣单词 Markdown 词表
 
-`app/wordbook.md` 是 Obsidian 编辑文件。它按原有四层标题组织 7,375 个单词。词条标题下是音标与释义，记忆内容支持引用块和联想、词根、提示、注释。短语放在各词条的「短语和搭配」里，63 条独立表达在文件末尾。
+在 Obsidian 打开 `app/wordbook/` 内的三份 Markdown。第 1 份开头是固定的五个测试词，第 3 份结尾是「其他」。学习卡使用二级标题，同卡派生词使用三级标题。在「其他」沿用主题组、简单词和独立短语的结构。
 
-短语每行写 `- 英文 中文`。中文译法以英文字母开头时，用一个 Tab 分隔。详情页按去掉首尾空格、合并中间空格、忽略大小写的英文查找，保留原标点、每次收录的原文及其译法。
+主词和派生词各留自己的音标、释义和短语。共同的故事写在主词下，词形特有的用法可以写在对应词形下。例如在 recruit 写故事，在 recruitment 下补 recruitment process 的用法。没灵感时可加一行 `#待补`，以后在 Obsidian 搜 `tag:#待补`。
 
-`app/wordbook-layout.json` 保存 Markdown 分组及成员的稳定映射。`app/catalog.json` 保留单词和网站词族 ID、义项分组、来源、别名和其他结构化字段。构建时保留这些字段并应用 Markdown 修改。日常编辑只需打开 Markdown。移动原分组内的词条可以调整文件顺序。修改拼写时，在 test 导入预览中选定原词条。
+短语用普通列表书写，每行一条英文和中文。当同一英文短语出现在多个词条时，网页会在译文旁显示「其他相关单词」。同一短语的不同中文译法会保留。
 
-## 本地操作
+在 `/test` 的「词书导入导出」里一次选择三份文件，核对差异后导入。需要发布时下载发布构建包。构建时默认使用仓库的三份文件，也支持 `--wordbook` 指定目录或导出的 JSON。旧版完整 Markdown 仍可导入。
 
-1. 运行 `python build-web.py`。用本地服务器打开 `dist` 下的本地编辑版和学习版。导入回滚使用浏览器 IndexedDB。
-2. 在「词书与语音」中选文件。核对音标、释义和短语变化后应用。空白笔记保留已有内容。要清空笔记，在笔记区单独写 `<!-- clear-note -->`。
-3. 词条页「编辑短语和搭配」可以修改当前单词的搭配。回到「词书与语音」可导出完整 Markdown、恢复上次导入前状态，或下载发布构建包。
-4. 将发布构建包传给 `python build-web.py --wordbook 路径.json`，生成使用同一份内容的两个 HTML。预览通过后可运行 `python build-deploy.py --local-release deployment/release-current.json --wordbook 路径.json` 生成 Pages 构建产物。
+## 整理工具
 
-构建依赖 Python 3 和 Node.js。构建命令只写本地产物。线上 GitHub 与 Cloudflare 走现有审批和发布流程。
+需要 Node.js，无需安装额外依赖。在 PowerShell 中运行已有三份词表，例如：
 
-## 验收
+```powershell
+node organize-wordbook.cjs .\整理结果 .\旧01.md .\旧02.md .\旧03.md
+```
 
-- `node verify-md-book.cjs` 核对全量词条、分组、短语、移动顺序、拼写确认与 Markdown 往返。
-- 构建网页后，设置 `BROWSER_EXE` 为本机 Chrome 或 Edge。运行 `node verify-md-ui.cjs`，使用项目可解析的 Playwright 或用 `PLAYWRIGHT_MODULE` 指向已有安装。
-- 构建 Pages 后，运行 `node verify-shared-worker.mjs` 检查公开与鉴权路径。
+首次整理按原有词族、构词后缀、词性和主要释义寻找适合合并的词。已改成新版格式的词表会沿用手工分组及顺序。需要调整时可加参数 `--rules=rules.json`：
+
+```json
+{
+  "merge": { "recruitment": "recruit" },
+  "keep": ["sleepy"],
+  "seed": "optional-new-order"
+}
+```
+
+`seed` 可省略。省略时重分新版文件会保留原顺序。输出目录应与输入文件所在目录不同。
